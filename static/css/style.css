@@ -33,6 +33,10 @@ h1, .brand {
 
 .site-header {
     border-bottom: 1px solid var(--line);
+    background-color: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .site-header .container {
@@ -51,13 +55,37 @@ h1, .brand {
 
 .site-header nav {
     display: flex;
+    align-items: center;
     gap: 2rem;
 }
 
 .site-header nav a {
+    position: relative;
     color: var(--ink);
     text-decoration: none;
     font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.25rem 0;
+    transition: color 0.2s ease;
+}
+
+.site-header nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 0;
+    height: 2px;
+    background-color: var(--accent);
+    transition: width 0.2s ease;
+}
+
+.site-header nav a:hover {
+    color: var(--accent-dark);
+}
+
+.site-header nav a:hover::after {
+    width: 100%;
 }
 
 .hero {
@@ -186,10 +214,29 @@ h1, .brand {
     }
 
     .hero-photo {
-        max-width: 220px;
+    max-width: 280px;
+    margin: 1rem auto 0;
     }
 
     .social-links {
         justify-content: flex-start;
+    }
+
+    .site-header .container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .site-header nav {
+        width: 100%;
+        gap: 1.25rem;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 0.25rem;
+    }
+
+    .site-header nav a {
+        font-size: 0.85rem;
     }
 }
