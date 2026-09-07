@@ -11,15 +11,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
 </head>
 
 <body>
     <header class="site-header">
         <div class="container">
-            <a href="{% url 'landing_page' %}" class="brand">Rheza</a>
+            <a href="{% url 'landing_page' %}" class="brand">
+                <img src="{% static 'img/favicon.png' %}" alt="" class="brand-logo">
+                <span>reeejaaaaaa</span></a>
             <nav>
                 <a href="{% url 'landing_page' %}#profile">Profile</a>
+                <a href="{% url 'education' %}">Education</a>
                 <a href="#projects">Projects</a>
                 <a href="#experience">Experience</a>
                 <a href="#contact">Contact</a>
@@ -54,11 +58,19 @@
                         </div>
                     </dl>
                     <div class="social-links">
-                        <a href="https://github.com/reeejaaaaaa"$css = (Invoke-WebRequest "http://127.0.0.1:8000/static/css/style.css?v=12345").Content class="social-link" target="_blank"
-                            rel="noopener noreferrer">GitHub</a>
+                        <a href="https://github.com/reeejaaaaaa" class="social-link" target="_blank"
+                            rel="noopener noreferrer">
+                            GitHub
+                        </a>
+
                         <a href="https://www.linkedin.com/in/rheza-abdilla-007a43257/" class="social-link"
-                            target="_blank" rel="noopener noreferrer">LinkedIn</a>
-                        <a href="mailto:rhezaabdilla0316@gmail.com" class="social-link">Email</a>
+                            target="_blank" rel="noopener noreferrer">
+                            LinkedIn
+                        </a>
+
+                        <a href="mailto:rhezaabdilla0316@gmail.com" class="social-link">
+                            Email
+                        </a>
                     </div>
                 </div>
             </div>

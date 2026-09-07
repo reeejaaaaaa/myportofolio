@@ -5,12 +5,20 @@
 }
 
 :root {
-    --ink: #1c1917;
-    --paper: #faf6f0;
-    --accent: #d95d39;
-    --accent-dark: #a8442a;
-    --line: #e3d9c9;
-    --text-muted: #6b6459;
+    --ink: #e8eef7;
+    --paper: #0b1220;
+
+    --accent: #2684ff;
+    --accent-bright: #59a8ff;
+    --accent-dark: #155dcc;
+
+    --surface: #111c2e;
+    --surface-soft: #16243a;
+
+    --line: #24344d;
+    --text-muted: #93a4ba;
+
+    --deep-blue: #08111f;
     --radius: 4px;
 }
 
@@ -22,6 +30,7 @@ body {
 }
 
 h1,
+h2,
 .brand {
     font-family: "Space Grotesk", -apple-system, sans-serif;
 }
@@ -32,9 +41,37 @@ h1,
     padding: 0 1.5rem;
 }
 
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.brand-logo {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    flex: 0 0 32px;
+    object-fit: contain;
+    display: block;
+}
+
+.brand:hover .brand-logo {
+    transform: scale(1.08);
+}
+
 .site-header {
     border-bottom: 1px solid var(--line);
-    background-color: var(--paper);
+    background-color: rgba(11, 18, 32, 0.92);
+    backdrop-filter: blur(10px);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -45,13 +82,6 @@ h1,
     justify-content: space-between;
     align-items: center;
     padding: 1.25rem 1.5rem;
-}
-
-.brand {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--ink);
-    text-decoration: none;
 }
 
 .site-header nav {
@@ -159,15 +189,17 @@ h1,
     font-size: 0.85rem;
     font-weight: 600;
     text-decoration: none;
-    color: var(--paper);
-    background-color: var(--ink);
+    color: var(--ink);
+    background-color: var(--surface-soft);
     border-radius: var(--radius);
     padding: 0.5rem 1.1rem;
     transition: background-color 0.2s ease;
+    border: 1px solid var(--line);
 }
 
 .social-link:hover {
     background-color: var(--accent);
+    color: white;
 }
 
 .hero-photo {
@@ -195,7 +227,7 @@ h1,
     aspect-ratio: 1 / 1;
     object-fit: cover;
     border-radius: var(--radius);
-    border: 3px solid var(--ink);
+    border: 3px solid var(--surface-soft);
 }
 
 .site-footer {
@@ -244,7 +276,7 @@ h1,
 .skill-item {
     appearance: none;
     border: 1px solid var(--line);
-    background: transparent;
+    background-color: var(--surface);
     border-radius: var(--radius);
 
     min-height: 135px;
@@ -290,9 +322,9 @@ h1,
 /* Desktop hover */
 .skill-item:hover {
     transform: translateY(-5px);
-    border-color: var(--accent);
+    border-color: var(--accent-bright);
     color: var(--ink);
-    background-color: rgba(217, 93, 57, 0.04);
+    background-color: var(--surface-soft);
 }
 
 .skill-item:hover img {
@@ -318,22 +350,277 @@ h1,
     transform: scale(1.22);
 }
 
-.skill-item:focus img {
-    filter: none;
-    opacity: 1;
-    transform: scale(1.22);
-}
-
 .skill-item:active {
     transform: scale(1.03);
     border-color: var(--accent);
-    background-color: rgba(217, 93, 57, 0.04);
+    background-color: rgba(38, 132, 255, 0.06);
 }
 
 .skill-item:active img {
     filter: none;
     opacity: 1;
     transform: scale(1.22);
+}
+
+/* ==================================
+   EDUCATION PAGE
+   ================================== */
+
+.education-page {
+    padding: 4.5rem 0 6rem;
+}
+
+.education-intro {
+    max-width: 680px;
+    margin-bottom: 3.5rem;
+}
+
+.education-intro h1 {
+    font-family: "Space Grotesk", -apple-system, sans-serif;
+    font-size: clamp(3rem, 7vw, 5rem);
+    line-height: 1;
+    margin-bottom: 1rem;
+}
+
+
+.education-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+
+.education-card {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 2rem;
+
+    padding: 2rem;
+
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        background-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+
+.education-card:hover {
+    transform: translateY(-5px);
+
+    border-color: var(--accent);
+
+    background-color: var(--surface-soft);
+
+    box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(38, 132, 255, 0.08);
+}
+
+
+/* LOGO */
+
+.education-logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 140px;
+
+    border-right: 1px solid var(--line);
+
+    padding-right: 2rem;
+}
+
+
+.education-logo {
+    width: 96px;
+    height: 96px;
+
+    object-fit: contain;
+
+    filter:
+        grayscale(100%) brightness(60%);
+
+    opacity: 0.55;
+
+    transition:
+        transform 0.3s ease,
+        filter 0.3s ease,
+        opacity 0.3s ease;
+}
+
+
+.education-card:hover .education-logo {
+    filter: none;
+    opacity: 1;
+
+    transform: scale(1.13);
+}
+
+
+/* CONTENT */
+
+.education-content {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.education-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 1.5rem;
+
+    margin-bottom: 1.5rem;
+}
+
+
+.education-level {
+    font-size: 0.75rem;
+
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+
+    font-weight: 700;
+
+    color: var(--accent-bright);
+
+    margin-bottom: 0.35rem;
+}
+
+
+.education-top h2 {
+    font-family: "Space Grotesk", sans-serif;
+
+    font-size: 1.45rem;
+
+    line-height: 1.2;
+}
+
+
+.education-institution {
+    color: var(--text-muted);
+
+    margin-top: 0.2rem;
+}
+
+
+.education-period {
+    flex-shrink: 0;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+
+    color: var(--text-muted);
+
+    padding: 0.3rem 0.65rem;
+
+    border: 1px solid var(--line);
+
+    border-radius: 999px;
+}
+
+
+/* STATS */
+
+.education-meta {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 2rem;
+
+    margin-bottom: 1.6rem;
+}
+
+
+.education-stat {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 90px;
+}
+
+
+.education-stat span {
+    font-size: 0.68rem;
+
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+
+    color: var(--text-muted);
+}
+
+
+.education-stat strong {
+    margin-top: 0.15rem;
+
+    font-size: 0.95rem;
+
+    color: var(--ink);
+}
+
+
+/* EXPERIENCE BUTTON */
+
+.education-actions {
+    margin-top: auto;
+}
+
+
+.education-button {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 0.6rem;
+
+    padding: 0.55rem 0.9rem;
+
+    border: 1px solid var(--line);
+
+    border-radius: 6px;
+
+    text-decoration: none;
+
+    font-size: 0.82rem;
+    font-weight: 600;
+
+    color: var(--ink);
+
+    background-color: var(--deep-blue);
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+
+.education-button span {
+    transition: transform 0.2s ease;
+}
+
+
+.education-button:hover {
+    background-color: var(--accent);
+
+    border-color: var(--accent);
+
+    color: #ffffff;
+
+    transform: translateY(-2px);
+}
+
+
+.education-button:hover span {
+    transform: translateX(4px);
 }
 
 @media (max-width: 600px) {
@@ -391,7 +678,56 @@ h1,
         padding: 3.5rem 0;
     }
 
-    .skill-item {
-    background: red !important;
+    .education-page {
+        padding: 3.5rem 0 4rem;
+    }
+
+    .education-intro {
+        margin-bottom: 2.5rem;
+    }
+
+    .education-card {
+        grid-template-columns: 1fr;
+
+        gap: 1.3rem;
+
+        padding: 1.4rem;
+    }
+
+    .education-logo-wrap {
+        justify-content: flex-start;
+
+        min-height: auto;
+
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+
+        padding-right: 0;
+        padding-bottom: 1.25rem;
+    }
+
+    .education-logo {
+        width: 72px;
+        height: 72px;
+    }
+
+    .education-top {
+        flex-direction: column;
+
+        gap: 0.75rem;
+    }
+
+    .education-meta {
+        display: grid;
+
+        grid-template-columns: repeat(2, 1fr);
+
+        gap: 1rem;
+    }
+
+    .education-button {
+        width: 100%;
+
+        justify-content: space-between;
     }
 }
