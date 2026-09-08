@@ -26,7 +26,7 @@
 <header class="site-header">
     <div class="container">
 
-        <a href="{% url 'landing_page' %}" class="brand">
+        <a href="{% url 'main:show_main' %}" class="brand">
             <img
                 src="{% static 'img/favicon.png' %}"
                 alt=""
@@ -36,11 +36,11 @@
         </a>
 
         <nav>
-            <a href="{% url 'landing_page' %}#profile">Profile</a>
+            <a href="{% url 'main:show_main' %}">Profile</a>
             <a href="{% url 'education' %}">Education</a>
-            <a href="{% url 'landing_page' %}#projects">Projects</a>
-            <a href="/experience/">Experience</a>
-            <a href="{% url 'landing_page' %}#contact">Contact</a>
+            <a href="{% url 'main:show_main' %}#projects">Projects</a>
+            <a href="{% url 'main:show_experience' %}">Experience</a>
+            <a href="{% url 'main:show_main' %}#contact">Contact</a>
         </nav>
 
     </div>
