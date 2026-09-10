@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from main.models import Experience
+from main.models import Education
 
 
 class MainTest(TestCase):
@@ -56,3 +57,69 @@ class MainTest(TestCase):
         self.assertFalse(self.experience.is_ongoing)
         self.assertContains(response, "Selesai")
         self.assertNotContains(response, "Sedang berlangsung")
+
+
+class EducationTest(TestCase):
+
+    def setUp(self):
+        self.education = Education.objects.create(
+            institution="SMA Pradita Dirgantara",
+            level="senior-high",
+            entry_year=2022,
+            graduation_year=2025,
+            gpa="94.48",
+            utbk_score=783,
+            logo_path="img/education/pradita.png",
+            experience_anchor="sma",
+            order=1,
+            is_current=False,
+        )
+
+    def test_education_url_is_accessible(self):
+        response = self.client.get(reverse("main:show_education"))
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertTemplateUsed(
+            response,
+            "education.html",
+        )
+
+    def test_education_data_appears_on_page(self):
+
+        response = self.client.get(reverse("main:show_education"))
+
+        self.assertContains(
+            response,
+            "SMA Pradita Dirgantara",
+        )
+
+        self.assertContains(
+            response,
+            "Senior High School",
+        )
+
+        self.assertContains(
+            response,
+            "783",
+        )
+
+    def test_education_empty_state(self):
+        Education.objects.all().delete()
+
+        response = self.client.get(reverse("main:show_education"))
+
+        self.assertContains(
+            response,
+            "Belum ada data pendidikan yang ditambahkan.",
+        )
+
+    def test_education_string_representation(self):
+
+        self.assertEqual(
+            str(self.education),
+            "SMA Pradita Dirgantara",
+        )

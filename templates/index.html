@@ -2,150 +2,124 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ name }} - Portfolio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
+  </head>
 
-<body>
+  <body>
     <header class="site-header">
-        <div class="container">
-            <a href="{% url 'main:show_main' %}" class="brand">
-                <img src="{% static 'img/favicon.png' %}" alt="" class="brand-logo">
-                <span>reeejaaaaaa</span></a>
-            <nav>
-                <a href="{% url 'main:show_main' %}">Profile</a>
-                <a href="{% url 'education' %}">Education</a>
-                <a href="#projects">Projects</a>
-                <a href="{% url 'main:show_experience' %}">Experience</a>
-                <a href="#contact">Contact</a>
-
-            </nav>
-        </div>
+      <div class="container">
+        <a href="{% url 'main:show_main' %}" class="brand">
+          <img src="{% static 'img/favicon.png' %}" alt="" class="brand-logo" />
+          <span>reeejaaaaaa</span>
+        </a>
+        <nav>
+          <a href="{% url 'main:show_main' %}">Profile</a>
+          <a href="{% url 'main:show_education' %}">Education</a>
+          <a href="#projects">Projects</a>
+          <a href="{% url 'main:show_experience' %}">Experience</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
     </header>
 
     <main>
-        <section class="hero" id="profile">
-            <div class="container hero-grid">
-                <div class="hero-identity">
-                    <p class="hero-kicker">Ilmu Komputer &middot; Universitas Indonesia</p>
-                    <h1>{{ name }}</h1>
-                </div>
-                <div class="hero-photo">
-                    <div class="photo-block"></div>
-                    <img class="avatar" src="{% static 'img/rheza.jpeg' %}" alt="Photo of {{ name }}">
-                </div>
-                <div class="hero-details">
-                    <p class="bio">{{ bio }}
-                    </p>
-                    <dl class="meta-list">
-                        <div class="meta-row">
-                            <dt>NPM</dt>
-                            <dd>{{ npm }}</dd>
-                        </div>
-                        <div class="meta-row">
-                            <dt>Program</dt>
-                            <dd>{{ study_program }}</dd>
-                        </div>
-                    </dl>
-                    <div class="social-links">
-                        <a href="https://github.com/reeejaaaaaa" class="social-link" target="_blank"
-                            rel="noopener noreferrer">
-                            GitHub
-                        </a>
+      <section class="hero" id="profile">
+        <div class="container hero-grid">
+          <div class="hero-identity">
+            <p class="hero-kicker">Ilmu Komputer &middot; Universitas Indonesia</p>
+            <h1>{{ name }}</h1>
+          </div>
+          <div class="hero-photo">
+            <div class="photo-block"></div>
+            <img class="avatar" src="{% static 'img/rheza.jpeg' %}" alt="Photo of {{ name }}" />
+          </div>
+          <div class="hero-details">
+            <p class="bio">{{ bio }}</p>
+            <dl class="meta-list">
+              <div class="meta-row">
+                <dt>NPM</dt>
+                <dd>{{ npm }}</dd>
+              </div>
+              <div class="meta-row">
+                <dt>Program</dt>
+                <dd>{{ study_program }}</dd>
+              </div>
+            </dl>
+            <div class="social-links">
+              <a href="https://github.com/reeejaaaaaa" class="social-link" target="_blank" rel="noopener noreferrer">GitHub</a>
 
-                        <a href="https://www.linkedin.com/in/rheza-abdilla-007a43257/" class="social-link"
-                            target="_blank" rel="noopener noreferrer">
-                            LinkedIn
-                        </a>
+              <a href="https://www.linkedin.com/in/rheza-abdilla-007a43257/" class="social-link" target="_blank" rel="noopener noreferrer">LinkedIn</a>
 
-                        <a href="mailto:rhezaabdilla0316@gmail.com" class="social-link">
-                            Email
-                        </a>
-                    </div>
-                </div>
+              <a href="mailto:rhezaabdilla0316@gmail.com" class="social-link">Email</a>
             </div>
-        </section>
-        <section class="skills-section" id="skills">
-            <div class="container">
+          </div>
+        </div>
+      </section>
+      <section class="skills-section" id="skills">
+        <div class="container">
+          <div class="section-heading">
+            <p class="section-kicker">Technical Skills</p>
+            <h2>Tools & Technologies</h2>
+            <p class="section-description">Technologies and tools I have worked with throughout my studies and personal projects.</p>
+          </div>
 
-                <div class="section-heading">
-                    <p class="section-kicker">Technical Skills</p>
-                    <h2>Tools & Technologies</h2>
-                    <p class="section-description">
-                        Technologies and tools I have worked with throughout my studies
-                        and personal projects.
-                    </p>
-                </div>
+          <div class="skills-grid">
+            <button class="skill-item" type="button">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python" />
+              <span>Python</span>
+            </button>
 
-                <div class="skills-grid">
+            <button class="skill-item" type="button">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg" alt="Java" />
+              <span>Java</span>
+            </button>
 
-                    <button class="skill-item" type="button">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg"
-                            alt="Python">
-                        <span>Python</span>
-                    </button>
+            <button class="skill-item" type="button">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg" alt="MySQL" />
+              <span>MySQL</span>
+            </button>
 
-                    <button class="skill-item" type="button">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg"
-                            alt="Java">
-                        <span>Java</span>
-                    </button>
+            <button class="skill-item" type="button">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML" />
+              <span>HTML</span>
+            </button>
 
-                    <button class="skill-item" type="button">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg"
-                            alt="MySQL">
-                        <span>MySQL</span>
-                    </button>
+            <button class="skill-item" type="button">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS" />
+              <span>CSS</span>
+            </button>
 
-                    <button class="skill-item" type="button">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg"
-                            alt="HTML">
-                        <span>HTML</span>
-                    </button>
+            <button class="skill-item" type="button">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git" />
+              <span>Git</span>
+            </button>
 
-                    <button class="skill-item" type="button">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg"
-                            alt="CSS">
-                        <span>CSS</span>
-                    </button>
+            <button class="skill-item" type="button">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" alt="GitHub" />
+              <span>GitHub</span>
+            </button>
 
-                    <button class="skill-item" type="button">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg"
-                            alt="Git">
-                        <span>Git</span>
-                    </button>
-
-                    <button class="skill-item" type="button">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg"
-                            alt="GitHub">
-                        <span>GitHub</span>
-                    </button>
-
-                    <button class="skill-item" type="button">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/django/django-plain.svg"
-                            alt="Django">
-                        <span>Django</span>
-                    </button>
-
-                </div>
-            </div>
-        </section>
+            <button class="skill-item" type="button">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/django/django-plain.svg" alt="Django" />
+              <span>Django</span>
+            </button>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
-        </div>
+      <div class="container">
+        <p>&copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
+      </div>
     </footer>
-</body>
-
+  </body>
 </html>

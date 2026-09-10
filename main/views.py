@@ -1,12 +1,5 @@
 from django.shortcuts import render
-
-from main.models import Experience
-
-
-
-from django.shortcuts import render
-
-from main.models import Experience
+from main.models import Education, Experience
 
 
 def show_main(request):
@@ -29,5 +22,22 @@ def show_experience(request):
         "experience_list": Experience.objects.all().order_by("-started_at"),
     }
 
+    return render(request, "experience.html", context)
+
+
+def show_education(request):
+    context = {
+        "name": "Rheza Abdilla",
+        "education_list": Education.objects.all(),
+    }
+
+    return render(request, "education.html", context)
+
+
+def show_experience(request):
+    context = {
+        "name": "Rheza Abdilla",
+        "experience_list": Experience.objects.all().order_by("-started_at"),
+    }
 
     return render(request, "experience.html", context)
