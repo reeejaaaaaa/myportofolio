@@ -1,5 +1,12 @@
 from django.shortcuts import render
 from main.models import Education, Experience
+from django.contrib import messages
+from main.forms import ProjectForm
+from main.models import Project
+from django.core import serializers
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+
 
 
 def show_main(request):
@@ -34,10 +41,54 @@ def show_education(request):
     return render(request, "education.html", context)
 
 
-def show_experience(request):
+
+def create_project(request):
+    form = ProjectForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Proyek baru berhasil ditambahkan!")
+        return redirect("main:show_projects")
+
     context = {
-        "name": "Rheza Abdilla",
-        "experience_list": Experience.objects.all().order_by("-started_at"),
+        "name": "Rheza",
+        "form": form,
+    }
+    return render(request, "projects_form.html", context)
+
+def show_projects(request):
+    title_query = request.GET.get("title", "").strip()
+
+    project_list = Project.objects.all()
+
+    if title_query:
+        project_list = project_list.filter(
+            title__icontains=title_query
+        )
+
+    context = {
+        "project_list": project_list,
+        "title_query": title_query,
     }
 
-    return render(request, "experience.html", context)
+    return render(request, "projects.html", context)
+
+def get_projects_json(request):
+    title_query = request.GET.get("title", "").strip()
+    projects = Project.objects.all()
+
+    if title_query:
+        projects = projects.filter(title__icontains=title_query)
+
+    projects_json = serializers.serialize("json", projects)
+    return HttpResponse(projects_json, content_type="application/json")
+
+def delete_project(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+
+    if request.method == "POST":
+        project.delete()
+        messages.success(request, "Project berhasil dihapus!")
+        return redirect("main:show_projects")
+
+    return redirect("main:show_projects")

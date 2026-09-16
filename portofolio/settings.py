@@ -60,6 +60,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "portofolio.urls"
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://rheza-abdilla-myportofolio.pws.cs.ui.ac.id",
+]
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
