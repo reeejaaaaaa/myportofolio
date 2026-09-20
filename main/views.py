@@ -57,17 +57,20 @@ def create_project(request):
     return render(request, "projects_form.html", context)
 
 def show_projects(request):
+    json_response = get_projects_json(request)
+
+    projects = serializers.deserialize(
+        "json",
+        json_response.content.decode("utf-8"),
+    )
+
+    projects = [project.object for project in projects]
+
     title_query = request.GET.get("title", "").strip()
 
-    project_list = Project.objects.all()
-
-    if title_query:
-        project_list = project_list.filter(
-            title__icontains=title_query
-        )
-
     context = {
-        "project_list": project_list,
+        "name": "Rheza Abdilla",
+        "project_list": projects,
         "title_query": title_query,
     }
 
