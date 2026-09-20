@@ -123,3 +123,97 @@ class EducationTest(TestCase):
             str(self.education),
             "SMA Pradita Dirgantara",
         )
+    
+    def test_education_json_endpoint(self):
+        response = self.client.get(
+            reverse("main:get_education_json")
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/json",
+        )
+
+        data = response.json()
+
+        self.assertEqual(len(data), 1)
+        self.assertEqual(
+            data[0]["fields"]["institution"],
+            "SMA Pradita Dirgantara",
+        )
+    
+    def test_create_education(self):
+        response = self.client.post(
+            reverse("main:create_education"),
+            {
+                "institution": "Universitas Indonesia",
+                "level": "undergraduate",
+                "entry_year": 2025,
+                "graduation_year": 2029,
+                "gpa": "3.01",
+                "utbk_score": "",
+                "logo_path": "img/education/ui.png",
+                "experience_anchor": "college",
+                "order": 2,
+                "is_current": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertTrue(
+            Education.objects.filter(
+                institution="Universitas Indonesia"
+            ).exists()
+        )
+
+    def test_update_education(self):
+        response = self.client.post(
+            reverse(
+                "main:update_education",
+                args=[self.education.id],
+            ),
+            {
+                "institution": "SMA Pradita Dirgantara",
+                "level": "senior-high",
+                "entry_year": 2022,
+                "graduation_year": 2025,
+                "gpa": "95.00",
+                "utbk_score": 790,
+                "logo_path": "img/education/pradita.png",
+                "experience_anchor": "sma",
+                "order": 1,
+                "is_current": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        self.education.refresh_from_db()
+
+        self.assertEqual(
+            str(self.education.gpa),
+            "95.00",
+        )
+
+        self.assertEqual(
+            self.education.utbk_score,
+            790,
+        )
+    
+    def test_delete_education(self):
+        response = self.client.post(
+            reverse(
+                "main:delete_education",
+                args=[self.education.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertFalse(
+            Education.objects.filter(
+                id=self.education.id
+            ).exists()
+        )

@@ -16,13 +16,25 @@ Education - Rheza Abdilla
 
             <div class="education-intro">
 
-                <p class="section-kicker">
-                    Academic Journey
-                </p>
 
-                <h1>
-                    Education
-                </h1>
+                <div class="project-header">
+
+                    <div>
+                        <p class="section-kicker">
+                            Academic Journey
+                        </p>
+
+                        <h1>
+                            Education
+                        </h1>
+                    </div>
+
+                    <a href="{% url 'main:create_education' %}" class="button project-add-button">
+                        <span aria-hidden="true">+</span>
+                        Add Education
+                    </a>
+
+                </div>
 
                 <p class="section-description">
                     A timeline of my academic journey, from junior high school
@@ -34,17 +46,16 @@ Education - Rheza Abdilla
 
             <div class="education-list">
 
+                {% for education in education_list %}
 
-                <!-- SMP -->
                 <article class="education-card">
 
                     <div class="education-logo-wrap">
 
-                        <img
-                            src="{% static 'img/education/smp49.png' %}"
-                            alt="SMP Negeri 49 Jakarta logo"
-                            class="education-logo"
-                        >
+                        {% if education.logo_path %}
+                        <img src="{% static education.logo_path %}" alt="{{ education.institution }} logo"
+                            class="education-logo">
+                        {% endif %}
 
                     </div>
 
@@ -55,215 +66,136 @@ Education - Rheza Abdilla
                             <div>
 
                                 <p class="education-level">
-                                    Junior High School
+                                    {{ education.get_level_display }}
                                 </p>
 
                                 <h2>
-                                    SMP Negeri 49 Jakarta
+                                    {{ education.institution }}
                                 </h2>
 
                             </div>
 
                             <span class="education-period">
-                                2019 — 2022
+                                {{ education.entry_year }} —
+                                {% if education.is_current %}
+                                Present
+                                {% else %}
+                                {{ education.graduation_year }}
+                                {% endif %}
                             </span>
 
                         </div>
-
 
                         <div class="education-meta">
 
                             <div class="education-stat">
                                 <span>Entry Year</span>
-                                <strong>2019</strong>   
+                                <strong>{{ education.entry_year }}</strong>
                             </div>
 
                             <div class="education-stat">
-                                <span>Graduation</span>
-                                <strong>2022</strong>
+                                <span>
+                                    {% if education.is_current %}
+                                    Expected Graduation
+                                    {% else %}
+                                    Graduation
+                                    {% endif %}
+                                </span>
+                                <strong>{{ education.graduation_year }}</strong>
                             </div>
 
-                            <div class="education-stat">
-                                <span>GPA</span>
-                                <strong>94.05</strong>
-                            </div>
-
-                        </div>
-
-
-                        <div class="education-actions">
-
-                            <a
-                                href="/experience/#smp"
-                                class="education-button"
-                            >
-                                View SMP Experience
-                                <span aria-hidden="true">→</span>
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-
-
-                <!-- SMA -->
-                <article class="education-card">
-
-                    <div class="education-logo-wrap">
-
-                        <img
-                            src="{% static 'img/education/pradita.png' %}"
-                            alt="SMA Pradita Dirgantara logo"
-                            class="education-logo"
-                        >
-
-                    </div>
-
-                    <div class="education-content">
-
-                        <div class="education-top">
-
-                            <div>
-
-                                <p class="education-level">
-                                    Senior High School
-                                </p>
-
-                                <h2>
-                                    SMA Pradita Dirgantara
-                                </h2>
-
-                            </div>
-
-                            <span class="education-period">
-                                2022 — 2025
-                            </span>
-
-                        </div>
-
-
-                        <div class="education-meta">
-
-                            <div class="education-stat">
-                                <span>Entry Year</span>
-                                <strong>2022</strong>
-                            </div>
-
-                            <div class="education-stat">
-                                <span>Graduation</span>
-                                <strong>2025</strong>
-                            </div>
-
+                            {% if education.gpa %}
                             <div class="education-stat">
                                 <span>GPA</span>
-                                <strong>94.48</strong>
+                                <strong>{{ education.gpa }}</strong>
                             </div>
+                            {% endif %}
 
+                            {% if education.utbk_score %}
                             <div class="education-stat">
                                 <span>UTBK Score</span>
-                                <strong>783</strong>
+                                <strong>{{ education.utbk_score }}</strong>
                             </div>
+                            {% endif %}
 
                         </div>
 
-
                         <div class="education-actions">
 
-                            <a
-                                href="/experience/#sma"
-                                class="education-button"
-                            >
-                                View SMA Experience
+                            {% if education.experience_anchor %}
+                            <a href="{% url 'main:show_experience' %}#{{ education.experience_anchor }}"
+                                class="education-button">
+                                View Experience
                                 <span aria-hidden="true">→</span>
                             </a>
+                            {% endif %}
+
+                            <a href="{% url 'main:update_education' education.id %}" class="education-button">
+                                Edit
+                            </a>
+
+                            <button type="button" class="button button-danger"
+                                popovertarget="delete-education-{{ education.id }}">
+                                Delete
+                            </button>
 
                         </div>
 
                     </div>
 
                 </article>
+                <div id="delete-education-{{ education.id }}" class="project-delete-modal" popover="auto" role="dialog"
+                    aria-modal="true" aria-labelledby="delete-education-title-{{ education.id }}">
 
+                    <button type="button" class="project-delete-modal__backdrop"
+                        popovertarget="delete-education-{{ education.id }}" popovertargetaction="hide"
+                        aria-label="Tutup konfirmasi hapus"></button>
 
+                    <div class="project-delete-modal__content">
 
-                <!-- UNIVERSITY -->
-                <article class="education-card">
+                        <button type="button" class="project-delete-modal__close"
+                            popovertarget="delete-education-{{ education.id }}" popovertargetaction="hide"
+                            aria-label="Tutup konfirmasi hapus">
+                            ×
+                        </button>
 
-                    <div class="education-logo-wrap">
+                        <h2 id="delete-education-title-{{ education.id }}">
+                            Hapus Education?
+                        </h2>
 
-                        <img
-                            src="{% static 'img/education/ui.png' %}"
-                            alt="Universitas Indonesia logo"
-                            class="education-logo"
-                        >
+                        <p>
+                            Apakah kamu yakin ingin menghapus
+                            <strong>{{ education.institution }}</strong>?
+                        </p>
 
-                    </div>
+                        <div class="project-delete-modal__actions">
 
-                    <div class="education-content">
+                            <button type="button" class="button button-secondary"
+                                popovertarget="delete-education-{{ education.id }}" popovertargetaction="hide">
+                                Batal
+                            </button>
 
-                        <div class="education-top">
+                            <form method="post" action="{% url 'main:delete_education' education.id %}">
+                                {% csrf_token %}
 
-                            <div>
-
-                                <p class="education-level">
-                                    Undergraduate
-                                </p>
-
-                                <h2>
-                                    Fakultas Ilmu Komputer
-                                </h2>
-
-                                <p class="education-institution">
-                                    Universitas Indonesia
-                                </p>
-
-                            </div>
-
-                            <span class="education-period">
-                                2025 — Present
-                            </span>
-
-                        </div>
-
-
-                        <div class="education-meta">
-
-                            <div class="education-stat">
-                                <span>Entry Year</span>
-                                <strong>2025</strong>
-                            </div>
-
-                            <div class="education-stat">
-                                <span>Expected Graduation</span>
-                                <strong>2029</strong>
-                            </div>
-
-                            <div class="education-stat">
-                                <span>GPA</span>
-                                <strong>3.01 / 4.00</strong>
-                            </div>
-
-                        </div>
-
-
-                        <div class="education-actions">
-
-                            <a
-                                href="/experience/#college"
-                                class="education-button"
-                            >
-                                View University Experience
-                                <span aria-hidden="true">→</span>
-                            </a>
+                                <button type="submit" class="button button-danger">
+                                    Ya, Hapus
+                                </button>
+                            </form>
 
                         </div>
 
                     </div>
 
-                </article>
+                </div>
 
+                {% empty %}
+
+                <p class="empty-state">
+                    Belum ada data pendidikan yang ditambahkan.
+                </p>
+
+                {% endfor %}
 
             </div>
 
@@ -274,5 +206,3 @@ Education - Rheza Abdilla
 </main>
 
 {% endblock content %}
-
-</html>

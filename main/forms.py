@@ -1,6 +1,14 @@
-from django.forms import ModelForm, TextInput, Textarea, URLInput
+from django.forms import (
+    CheckboxInput,
+    ModelForm,
+    NumberInput,
+    Select,
+    TextInput,
+    Textarea,
+    URLInput,
+)
 
-from main.models import Project
+from main.models import Education, Project
 
 class ProjectForm(ModelForm):
     class Meta:
@@ -49,4 +57,83 @@ class ProjectForm(ModelForm):
                     "placeholder": "https://drive.google.com/thumbnail?id=...&sz=w1000",
                 }
             ),
+        }
+
+class EducationForm(ModelForm):
+    class Meta:
+        model = Education
+
+        fields = [
+            "institution",
+            "level",
+            "entry_year",
+            "graduation_year",
+            "gpa",
+            "utbk_score",
+            "logo_path",
+            "experience_anchor",
+            "order",
+            "is_current",
+        ]
+
+        labels = {
+            "institution": "Nama Institusi",
+            "level": "Jenjang Pendidikan",
+            "entry_year": "Tahun Masuk",
+            "graduation_year": "Tahun Lulus",
+            "gpa": "GPA / Nilai",
+            "utbk_score": "Nilai UTBK",
+            "logo_path": "Path Logo",
+            "experience_anchor": "Experience Anchor",
+            "order": "Urutan",
+            "is_current": "Sedang Dijalani",
+        }
+
+        widgets = {
+            "institution": TextInput(
+                attrs={
+                    "placeholder": "Universitas Indonesia",
+                }
+            ),
+            "level": Select(),
+            "entry_year": NumberInput(
+                attrs={
+                    "min": 1900,
+                    "max": 2100,
+                }
+            ),
+            "graduation_year": NumberInput(
+                attrs={
+                    "min": 1900,
+                    "max": 2100,
+                }
+            ),
+            "gpa": NumberInput(
+                attrs={
+                    "step": "0.01",
+                    "placeholder": "3.50",
+                }
+            ),
+            "utbk_score": NumberInput(
+                attrs={
+                    "placeholder": "783",
+                }
+            ),
+            "logo_path": TextInput(
+                attrs={
+                    "placeholder": "img/education/ui.png",
+                }
+            ),
+            "experience_anchor": TextInput(
+                attrs={
+                    "placeholder": "college",
+                }
+            ),
+            "order": NumberInput(
+                attrs={
+                    "min": 0,
+                    "placeholder": "1",
+                }
+            ),
+            "is_current": CheckboxInput(),
         }

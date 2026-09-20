@@ -10,49 +10,50 @@
 
 ---
 
-# 📁 Struktur Folder
+## 📁 Struktur Folder
 
+```text
 myportofolio/
-│
-├── env/                         # Python virtual environment
-├── venv/                        # Virtual environment lain
-│
 ├── main/
-│   ├── migrations/              # Database migrations
-│   ├── models.py                # Model Experience & Education
-│   ├── tests.py                 # Unit tests
-│   ├── urls.py                  # URL aplikasi main
-│   └── views.py                 # View aplikasi main
+│   ├── migrations/
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
 │
 ├── portofolio/
-│   ├── __pycache__/
-│   ├── __init__.py
-│   ├── asgi.py
 │   ├── settings.py
 │   ├── urls.py
+│   ├── asgi.py
 │   └── wsgi.py
 │
 ├── static/
 │   ├── css/
 │   │   └── style.css
-│   │
 │   └── img/
 │       ├── education/
 │       ├── favicon.png
 │       └── rheza.jpeg
 │
 ├── templates/
+│   ├── components/
+│   │   └── project_delete_modal.html
+│   ├── base.html
 │   ├── education.html
+│   ├── education_form.html
 │   ├── experience.html
-│   └── index.html
+│   ├── index.html
+│   ├── projects.html
+│   └── projects_form.html
 │
-├── .env
-├── .env.prod
 ├── .gitignore
-├── db.sqlite3
 ├── manage.py
 ├── README.md
 └── requirements.txt
+```
 
 # 📚 Refleksi Tugas
 
@@ -159,11 +160,11 @@ Dalam pengembangan website portofolio ini, saya menggunakan ChatGPT sebagai AI a
 
 ChatGPT saya gunakan untuk membantu:
 
-Memberikan saran struktur HTML, CSS, Django routing, model, dan halaman Education.
-Membantu debugging masalah static files, virtual environment, migration, database, deployment PWS, dan konfigurasi Django.
-Memberikan referensi implementasi Model-View-Template untuk Experience dan Education.
-Membantu memberikan contoh unit test untuk memastikan URL, template, data model, dan empty state bekerja dengan benar.
-Membantu menganalisis traceback atau error log yang muncul ketika development.
+- Memberikan saran struktur HTML, CSS, Django routing, model, dan halaman Education.
+- Membantu debugging masalah static files, virtual environment, migration, database, deployment PWS, dan konfigurasi Django.
+- Memberikan referensi implementasi Model-View-Template untuk Experience dan Education.
+- Membantu memberikan contoh unit test untuk memastikan URL, template, data model, dan empty state bekerja dengan benar.
+- Membantu menganalisis traceback atau error log yang muncul ketika development.
 
 ## 💬 Strategi Penggunaan AI
 
@@ -181,10 +182,72 @@ Beberapa solusi dari AI juga saya ubah kembali agar sesuai dengan struktur proje
 
 ChatGPT memiliki beberapa keterbatasan selama proses pengembangan ini:
 
-Saran kode tidak selalu langsung cocok dengan kondisi project sehingga tetap perlu diuji dan disesuaikan.
-Tidak dapat menjalankan atau mengubah environment lokal dan PWS saya secara langsung.
-Beberapa masalah baru dapat diketahui setelah kode dijalankan pada development server.
-Saran syntax dan styling terkadang masih perlu dikembangkan kembali agar sesuai dengan desain yang saya inginkan dan tidak terkesan terlalu standar atau kuno.
+- Saran kode tidak selalu langsung cocok dengan kondisi project sehingga tetap perlu diuji dan disesuaikan.
+- Tidak dapat menjalankan atau mengubah environment lokal dan PWS saya secara langsung.
+- Beberapa masalah baru dapat diketahui setelah kode dijalankan pada development server.
+- Saran syntax dan styling terkadang masih perlu dikembangkan kembali agar sesuai dengan desain yang saya inginkan dan tidak terkesan terlalu standar atau kuno.
 
 Karena itu, AI saya gunakan sebagai alat bantu pengembangan, sedangkan keputusan akhir, implementasi, dan pengujian tetap saya lakukan sendiri.
 
+### 🎓 Tugas 3
+
+### 1.  
+   `ModelForm` mempermudah pembuatan dan validasi form karena field langsung mengikuti model Django. `{% csrf_token %}` digunakan untuk memastikan request POST berasal dari form aplikasi yang sah dan mencegah serangan CSRF.
+
+### 2. 
+   JSON lebih ringan, ringkas, dan mudah dibaca maupun diproses oleh JavaScript. Struktur object dan array pada JSON juga lebih praktis untuk pertukaran data antara client dan server.
+
+### 3.  
+   View mengambil data dari model, kemudian `serializers.serialize()` mengubah object Django menjadi JSON sebelum dikirim melalui `HttpResponse`. Serialization diperlukan karena object Django tidak dapat langsung dikirim sebagai format data web seperti JSON.
+
+#### Implementasi Tugas 3
+
+Pada Tugas 3, saya memilih bagian **Education** untuk menerapkan Form & Data Delivery.
+
+Fitur yang telah diimplementasikan:
+
+- Refactoring template menggunakan `base.html`
+- `EducationForm` menggunakan Django `ModelForm`
+- Create Education
+- Update Education
+- Delete Education dengan modal konfirmasi
+- JSON endpoint untuk Education
+- Serialization dan deserialization data Education
+- Tampilan Education berdasarkan data database
+- Unit testing untuk JSON, Create, Update, dan Delete Education
+- Validasi seluruh fitur menggunakan Django TestCase
+
+## 🤖 AI Disclosure
+
+Dalam pengerjaan proyek ini, saya menggunakan ChatGPT sebagai alat bantu pembelajaran dan debugging.
+
+AI digunakan untuk membantu:
+- memahami struktur MVT Django;
+- merancang ModelForm untuk Project dan Education;
+- memahami serialization dan deserialization JSON;
+- merancang alur Create, Update, dan Delete;
+- membantu debugging routing, template inheritance, dan CSS;
+- membantu penulisan syntax serta mengevaluasi unit test;
+- menganalisis error pada environment development.
+
+## 💬 Strategi Penggunaan AI
+
+Saya menggunakan AI secara iteratif dengan memberikan kode, error log, dan hasil implementasi yang telah saya kerjakan. Solusi dari AI tidak langsung digunakan begitu saja, tetapi diuji dan disesuaikan dengan struktur proyek saya.
+
+## 🧑‍💻 Pengerjaan Mandiri 
+
+Saya tetap mengerjakan implementasi utama secara mandiri, seperti:
+- membuat dan menghubungkan model, view, URL, dan template;
+- melakukan migration dan mengelola database;
+- menguji fitur Create, Update, Delete, dan JSON endpoint;
+- menjalankan serta memperbaiki unit test;
+- melakukan deployment dan pengecekan aplikasi secara langsung.
+
+AI saya gunakan terutama untuk diskusi konsep, debugging, dan memberikan referensi solusi ketika menemukan error.
+
+## ⚠️ Keterbatasan AI
+
+- AI tidak dapat melihat kondisi environment lokal secara langsung. 
+- Saran kode tidak selalu langsung cocok dengan kondisi project sehingga tetap perlu diuji dan disesuaikan.
+- Beberapa masalah baru dapat diketahui setelah testing dan kode dijalankan pada development server.
+- Saran syntax dan styling terkadang masih perlu dikembangkan kembali agar sesuai dengan desain yang saya inginkan dan tidak terkesan terlalu standar atau kuno.
