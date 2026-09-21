@@ -7,90 +7,185 @@ Rheza Abdilla - Portfolio
 
 {% block content %}
 
-    <main>
-      <section class="hero" id="profile">
-        <div class="container hero-grid">
-          <div class="hero-identity">
-            <p class="hero-kicker">Ilmu Komputer &middot; Universitas Indonesia</p>
-            <h1>{{ name }}</h1>
+<main>
+  <section class="hero" id="profile">
+    <div class="container hero-grid">
+      <div class="hero-identity">
+        <p class="hero-kicker">Ilmu Komputer &middot; Universitas Indonesia</p>
+        <h1>{{ name }}</h1>
+      </div>
+      <div class="hero-photo">
+        <div class="photo-block"></div>
+        <img class="avatar" src="{% static 'img/rheza.jpeg' %}" alt="Photo of {{ name }}" />
+      </div>
+      <div class="hero-details">
+        <p class="bio">{{ bio }}</p>
+        <dl class="meta-list">
+          <div class="meta-row">
+            <dt>NPM</dt>
+            <dd>{{ npm }}</dd>
           </div>
-          <div class="hero-photo">
-            <div class="photo-block"></div>
-            <img class="avatar" src="{% static 'img/rheza.jpeg' %}" alt="Photo of {{ name }}" />
+          <div class="meta-row">
+            <dt>Program</dt>
+            <dd>{{ study_program }}</dd>
           </div>
-          <div class="hero-details">
-            <p class="bio">{{ bio }}</p>
-            <dl class="meta-list">
-              <div class="meta-row">
-                <dt>NPM</dt>
-                <dd>{{ npm }}</dd>
-              </div>
-              <div class="meta-row">
-                <dt>Program</dt>
-                <dd>{{ study_program }}</dd>
-              </div>
-            </dl>
-            <div class="social-links">
-              <a href="https://github.com/reeejaaaaaa" class="social-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </dl>
+        <div class="social-links">
+          <a href="https://github.com/reeejaaaaaa" class="social-link" target="_blank"
+            rel="noopener noreferrer">GitHub</a>
 
-              <a href="https://www.linkedin.com/in/rheza-abdilla-007a43257/" class="social-link" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://www.linkedin.com/in/rheza-abdilla-007a43257/" class="social-link" target="_blank"
+            rel="noopener noreferrer">LinkedIn</a>
 
-              <a href="mailto:rhezaabdilla0316@gmail.com" class="social-link">Email</a>
+          <a href="mailto:rhezaabdilla0316@gmail.com" class="social-link">Email</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="skills-section" id="skills">
+    <div class="container">
+      <div class="section-heading skill-heading">
+
+        <div>
+          <p class="section-kicker">
+            Technical Skills
+          </p>
+
+          <h2>
+            Tools & Technologies
+          </h2>
+        </div>
+
+        <a href="{% url 'main:create_skill' %}" class="button project-add-button">
+          <span aria-hidden="true">+</span>
+          Add Skill
+        </a>
+
+      </div>
+
+      <p class="section-description">
+        Technologies and tools I have worked with throughout my studies and personal projects.
+      </p>
+
+      <div class="skills-grid">
+
+        {% for skill in skill_list %}
+
+        <article class="skill-item">
+
+          <div class="skill-main">
+
+            {% if skill.logo_url %}
+            <img src="{{ skill.logo_url }}" alt="{{ skill.name }}">
+            {% endif %}
+
+            <span class="skill-name">
+              {{ skill.name }}
+            </span>
+
+          </div>
+
+          <div class="skill-details">
+
+            {% if skill.description %}
+            <p class="skill-description">
+              {{ skill.description }}
+            </p>
+            {% endif %}
+
+            <div class="skill-projects">
+
+              <strong>
+                Used in
+              </strong>
+
+              {% for project in skill.projects.all %}
+
+              <a href="{% url 'main:show_projects' %}" class="skill-project-link">
+                {{ project.title }}
+              </a>
+
+              {% empty %}
+
+              <span class="skill-no-project">
+                Belum digunakan di project.
+              </span>
+
+              {% endfor %}
+
             </div>
+
           </div>
+
+      </div>
+
+      <div class="skill-actions">
+
+        <a href="{% url 'main:update_skill' skill.id %}" class="skill-edit-button">
+          Edit
+        </a>
+
+        <button type="button" class="skill-delete-button" popovertarget="delete-skill-{{ skill.id }}">
+          Delete
+        </button>
+
+      </div>
+
+      </article>
+      <div id="delete-skill-{{ skill.id }}" class="project-delete-modal" popover="auto" role="dialog" aria-modal="true"
+        aria-labelledby="delete-skill-title-{{ skill.id }}">
+
+        <button type="button" class="project-delete-modal__backdrop" popovertarget="delete-skill-{{ skill.id }}"
+          popovertargetaction="hide" aria-label="Tutup konfirmasi hapus"></button>
+
+        <div class="project-delete-modal__content">
+
+          <button type="button" class="project-delete-modal__close" popovertarget="delete-skill-{{ skill.id }}"
+            popovertargetaction="hide" aria-label="Tutup konfirmasi hapus">
+            ×
+          </button>
+
+          <h2 id="delete-skill-title-{{ skill.id }}">
+            Hapus Skill?
+          </h2>
+
+          <p>
+            Apakah kamu yakin ingin menghapus
+            <strong>{{ skill.name }}</strong>?
+          </p>
+
+          <div class="project-delete-modal__actions">
+
+            <button type="button" class="button button-secondary" popovertarget="delete-skill-{{ skill.id }}"
+              popovertargetaction="hide">
+              Batal
+            </button>
+
+            <form method="post" action="{% url 'main:delete_skill' skill.id %}">
+              {% csrf_token %}
+
+              <button type="submit" class="button button-danger">
+                Ya, Hapus
+              </button>
+            </form>
+
+          </div>
+
         </div>
-      </section>
-      <section class="skills-section" id="skills">
-        <div class="container">
-          <div class="section-heading">
-            <p class="section-kicker">Technical Skills</p>
-            <h2>Tools & Technologies</h2>
-            <p class="section-description">Technologies and tools I have worked with throughout my studies and personal projects.</p>
-          </div>
 
-          <div class="skills-grid">
-            <button class="skill-item" type="button">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python" />
-              <span>Python</span>
-            </button>
+      </div>
 
-            <button class="skill-item" type="button">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg" alt="Java" />
-              <span>Java</span>
-            </button>
+      {% empty %}
 
-            <button class="skill-item" type="button">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg" alt="MySQL" />
-              <span>MySQL</span>
-            </button>
+      <p class="empty-state">
+        Belum ada skill yang ditambahkan.
+      </p>
 
-            <button class="skill-item" type="button">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML" />
-              <span>HTML</span>
-            </button>
+      {% endfor %}
 
-            <button class="skill-item" type="button">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS" />
-              <span>CSS</span>
-            </button>
-
-            <button class="skill-item" type="button">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git" />
-              <span>Git</span>
-            </button>
-
-            <button class="skill-item" type="button">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" alt="GitHub" />
-              <span>GitHub</span>
-            </button>
-
-            <button class="skill-item" type="button">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/django/django-plain.svg" alt="Django" />
-              <span>Django</span>
-            </button>
-          </div>
-        </div>
-      </section>
-    </main>
+    </div>
+    </div>
+  </section>
+</main>
 
 {% endblock content %}

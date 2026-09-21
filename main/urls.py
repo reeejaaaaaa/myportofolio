@@ -12,6 +12,10 @@ from main.views import (
     create_education,
     update_education,
     delete_education,
+    get_skills_json,
+    create_skill,
+    update_skill,
+    delete_skill,
 )
 
 app_name = "main"
@@ -47,5 +51,25 @@ urlpatterns = [
         "education/<uuid:education_id>/delete/",
         delete_education,
         name="delete_education",
+    ),
+    path(
+        "api/skills/",
+        get_skills_json,
+        name="get_skills_json",
+    ),
+    path(
+        "skills/add/",
+        create_skill,
+        name="create_skill",
+    ),
+    path(
+        "skills/<uuid:skill_id>/edit/",
+        update_skill,
+        name="update_skill",
+    ),
+    path(
+        "skills/<uuid:skill_id>/delete/",
+        delete_skill,
+        name="delete_skill",
     ),
 ]

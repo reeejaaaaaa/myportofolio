@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from main.models import Education, Experience
+from main.models import Education, Experience, Skill
 from django.contrib import messages
-from main.forms import EducationForm, ProjectForm
+from main.forms import EducationForm, ProjectForm, SkillForm
 from main.models import Project
 from django.core import serializers
 from django.http import HttpResponse
@@ -10,6 +10,18 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 
 def show_main(request):
+    json_response = get_skills_json(request)
+
+    skills = serializers.deserialize(
+        "json",
+        json_response.content.decode("utf-8"),
+    )
+
+    skill_list = [
+        skill.object
+        for skill in skills
+    ]
+
     context = {
         "name": "Rheza Abdilla",
         "npm": "2506612184",
@@ -18,10 +30,10 @@ def show_main(request):
             "Mahasiswa Ilmu Komputer Universitas Indonesia yang tertarik "
             "pada pengembangan cyber security dan pendidikan."
         ),
+        "skill_list": skill_list,
     }
 
     return render(request, "index.html", context)
-
 
 def show_experience(request):
     context = {
@@ -198,3 +210,92 @@ def delete_education(request, education_id):
         return redirect("main:show_education")
 
     return redirect("main:show_education")
+
+def get_skills_json(request):
+    skills = Skill.objects.all()
+
+    skills_json = serializers.serialize(
+        "json",
+        skills,
+    )
+
+    return HttpResponse(
+        skills_json,
+        content_type="application/json",
+    )
+
+def create_skill(request):
+    form = SkillForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+
+        messages.success(
+            request,
+            "Skill berhasil ditambahkan!",
+        )
+
+        return redirect("main:show_main")
+
+    context = {
+        "name": "Rheza Abdilla",
+        "form": form,
+    }
+
+    return render(
+        request,
+        "skill_form.html",
+        context,
+    )
+    
+def update_skill(request, skill_id):
+    skill = get_object_or_404(
+        Skill,
+        pk=skill_id,
+    )
+
+    form = SkillForm(
+        request.POST or None,
+        instance=skill,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+
+        messages.success(
+            request,
+            "Skill berhasil diperbarui!",
+        )
+
+        return redirect("main:show_main")
+
+    context = {
+        "name": "Rheza Abdilla",
+        "form": form,
+        "skill": skill,
+        "is_edit": True,
+    }
+
+    return render(
+        request,
+        "skill_form.html",
+        context,
+    )
+
+def delete_skill(request, skill_id):
+    skill = get_object_or_404(
+        Skill,
+        pk=skill_id,
+    )
+
+    if request.method == "POST":
+        skill.delete()
+
+        messages.success(
+            request,
+            "Skill berhasil dihapus!",
+        )
+
+        return redirect("main:show_main")
+
+    return redirect("main:show_main")

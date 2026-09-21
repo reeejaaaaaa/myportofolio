@@ -94,3 +94,40 @@ class Project(models.Model):
 
     def __str__(self):
         return self.title
+
+class Skill(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+    )
+
+    logo_url = models.URLField(
+        blank=True,
+        max_length=500,
+    )
+
+    description = models.TextField(
+        blank=True,
+    )
+
+    projects = models.ManyToManyField(
+        Project,
+        blank=True,
+        related_name="skills",
+    )
+
+    order = models.PositiveIntegerField(
+        default=0,
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["order", "name"]

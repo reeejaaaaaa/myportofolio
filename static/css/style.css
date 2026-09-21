@@ -273,31 +273,41 @@ h2,
     gap: 1rem;
 }
 
+.skill-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
 .skill-item {
-    appearance: none;
+    position: relative;
+    overflow: hidden;
+
     border: 1px solid var(--line);
     background-color: var(--surface);
     border-radius: var(--radius);
 
-    min-height: 135px;
+    min-height: 170px;
     padding: 1.25rem;
 
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 0.75rem;
 
     font-family: inherit;
     color: var(--text-muted);
 
-    cursor: pointer;
+    cursor: default;
 
     transition:
-        transform 0.25s ease,
-        border-color 0.25s ease,
-        background-color 0.25s ease,
-        color 0.25s ease;
+        transform 0.3s ease,
+        border-color 0.3s ease,
+        background-color 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .skill-item img {
@@ -314,17 +324,10 @@ h2,
         opacity 0.25s ease;
 }
 
-.skill-item span {
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-/* Desktop hover */
-.skill-item:hover {
-    transform: translateY(-5px);
-    border-color: var(--accent-bright);
+.skill-name {
+    font-size: 0.9rem;
+    font-weight: 700;
     color: var(--ink);
-    background-color: var(--surface-soft);
 }
 
 .skill-item:hover img {
@@ -333,38 +336,171 @@ h2,
     transform: scale(1.22);
 }
 
-.skill-item:focus {
-    transform: translateY(-5px);
+
+a.skill-edit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.35rem;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: var(--text-muted);
+    background-color: var(--deep-blue);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+a.skill-edit-button:hover {
+    color: #ffffff;
     border-color: var(--accent);
+    background-color: var(--accent);
+}
+
+.skill-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+}
+
+.skill-delete-button {
+    padding: 0.35rem 0.7rem;
+    border: 1px solid #b42318;
+    border-radius: 5px;
+    background: transparent;
+    color: #ff8a80;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.skill-delete-button:hover {
+    color: #ffffff;
+    background-color: #b42318;
+    border-color: #b42318;
+}
+
+.skill-main {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 0.75rem;
+
+    transition: transform 0.3s ease;
+}
+
+.skill-details {
+    width: 100%;
+
+    max-height: 0;
+
+    opacity: 0;
+
+    overflow: hidden;
+
+    transform: translateY(12px);
+
+    transition:
+        max-height 0.35s ease,
+        opacity 0.25s ease,
+        transform 0.35s ease,
+        margin-top 0.35s ease;
+}
+
+.skill-item:hover .skill-details {
+    max-height: 260px;
+
+    opacity: 1;
+
+    transform: translateY(0);
+
+    margin-top: 0.5rem;
+}
+
+.skill-item:hover .skill-main {
+    transform: translateY(-3px);
+}
+
+.skill-description {
+    color: var(--text-muted);
+
+    font-size: 0.78rem;
+    line-height: 1.5;
+
+    text-align: center;
+}
+
+.skill-projects {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.35rem;
+
+    margin-top: 0.8rem;
+    padding-top: 0.7rem;
+
+    border-top: 1px solid var(--line);
+
+    text-align: center;
+}
+
+.skill-projects strong {
+    color: var(--accent-bright);
+
+    font-size: 0.68rem;
+
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.skill-project-link {
     color: var(--ink);
+
+    font-size: 0.75rem;
+
+    text-decoration: none;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
-.skill-item:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
+.skill-project-link:hover {
+    color: var(--accent-bright);
+
+    transform: translateX(3px);
 }
 
-.skill-item:focus img {
-    filter: none;
-    opacity: 1;
-    transform: scale(1.22);
+.skill-no-project {
+    color: var(--text-muted);
+
+    font-size: 0.72rem;
 }
 
-.skill-item:active {
-    transform: scale(1.03);
+.skill-item:hover {
+    transform: translateY(-6px);
+
     border-color: var(--accent);
-    background-color: rgba(38, 132, 255, 0.06);
-}
 
-.skill-item:active img {
-    filter: none;
-    opacity: 1;
-    transform: scale(1.22);
-}
+    background-color: var(--surface-soft);
 
-/* ==================================
-   EDUCATION PAGE
-   ================================== */
+    box-shadow:
+        0 14px 35px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(38, 132, 255, 0.08);
+}
 
 .education-page {
     padding: 4.5rem 0 6rem;
@@ -729,7 +865,7 @@ h2,
 }
 
 .project-search__input {
-        width: 100%;
+    width: 100%;
     min-width: 0;
     padding: 0.7rem;
     border: 1px solid var(--line);
@@ -1093,6 +1229,16 @@ h2,
         width: 100%;
 
         justify-content: space-between;
+    }
+
+    .skill-heading {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .skill-heading .project-add-button {
+        width: 100%;
+        justify-content: center;
     }
 
 }

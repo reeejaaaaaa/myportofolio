@@ -8,7 +8,7 @@ from django.forms import (
     URLInput,
 )
 
-from main.models import Education, Project
+from main.models import Education, Project, Skill
 
 class ProjectForm(ModelForm):
     class Meta:
@@ -136,4 +136,48 @@ class EducationForm(ModelForm):
                 }
             ),
             "is_current": CheckboxInput(),
+        }
+
+class SkillForm(ModelForm):
+    class Meta:
+        model = Skill
+
+        fields = [
+            "name",
+            "logo_url",
+            "description",
+            "projects",
+            "order",
+        ]
+
+        labels = {
+            "name": "Nama Skill",
+            "logo_url": "URL Logo",
+            "description": "Deskripsi",
+            "projects": "Project yang Menggunakan Skill Ini",
+            "order": "Urutan",
+        }
+
+        widgets = {
+            "name": TextInput(
+                attrs={
+                    "placeholder": "Python",
+                }
+            ),
+            "logo_url": URLInput(
+                attrs={
+                    "placeholder": "https://...",
+                }
+            ),
+            "description": Textarea(
+                attrs={
+                    "placeholder": "Backend development, data processing, automation...",
+                    "rows": 3,
+                }
+            ),
+            "order": NumberInput(
+                attrs={
+                    "min": 0,
+                }
+            ),
         }
