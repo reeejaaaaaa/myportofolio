@@ -2,8 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from main.models import Experience
-from main.models import Education
+from main.models import Experience, Education, Project
+from django.contrib.auth.models import User
 
 
 class MainTest(TestCase):
@@ -123,11 +123,9 @@ class EducationTest(TestCase):
             str(self.education),
             "SMA Pradita Dirgantara",
         )
-    
+
     def test_education_json_endpoint(self):
-        response = self.client.get(
-            reverse("main:get_education_json")
-        )
+        response = self.client.get(reverse("main:get_education_json"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -142,7 +140,7 @@ class EducationTest(TestCase):
             data[0]["fields"]["institution"],
             "SMA Pradita Dirgantara",
         )
-    
+
     def test_create_education(self):
         response = self.client.post(
             reverse("main:create_education"),
@@ -163,9 +161,7 @@ class EducationTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
         self.assertTrue(
-            Education.objects.filter(
-                institution="Universitas Indonesia"
-            ).exists()
+            Education.objects.filter(institution="Universitas Indonesia").exists()
         )
 
     def test_update_education(self):
@@ -201,7 +197,7 @@ class EducationTest(TestCase):
             self.education.utbk_score,
             790,
         )
-    
+
     def test_delete_education(self):
         response = self.client.post(
             reverse(
@@ -212,8 +208,95 @@ class EducationTest(TestCase):
 
         self.assertEqual(response.status_code, 302)
 
+        self.assertFalse(Education.objects.filter(id=self.education.id).exists())
+
+
+class AuthenticationTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="rheza",
+            password="testpass123",
+        )
+
+    def test_login(self):
+        response = self.client.post(
+            reverse("main:login"),
+            {
+                "username": "rheza",
+                "password": "testpass123",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue("_auth_user_id" in self.client.session)
+
+
+    def test_logout(self):
+        self.client.login(
+            username="rheza",
+            password="testpass123",
+        )
+
+        response = self.client.get(
+            reverse("main:logout")
+        )
+
+        self.assertEqual(response.status_code, 302)
+
         self.assertFalse(
-            Education.objects.filter(
-                id=self.education.id
+            "_auth_user_id" in self.client.session
+        )
+    
+    def test_toggle_star_project(self):
+        project = Project.objects.create(
+            title="Portfolio Website",
+            description="Website portfolio pribadi.",
+            tech_stack="Django",
+            project_url="",
+            project_image_url="",
+        )
+
+        self.client.login(
+            username="rheza",
+            password="testpass123",
+        )
+
+        response = self.client.post(
+            reverse(
+                "main:toggle_star",
+                args=[project.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            project.starred_by.filter(
+                id=self.user.id
             ).exists()
+        )
+
+        response = self.client.post(
+            reverse(
+                "main:toggle_star",
+                args=[project.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(
+            project.starred_by.filter(
+                id=self.user.id
+            ).exists()
+        )
+    
+    def test_anonymous_cannot_create_project(self):
+        response = self.client.get(
+            reverse("main:create_project")
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertIn(
+            "/login/",
+            response.url,
         )
