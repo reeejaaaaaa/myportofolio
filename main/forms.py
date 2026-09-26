@@ -6,9 +6,12 @@ from django.forms import (
     TextInput,
     Textarea,
     URLInput,
+    DateTimeInput,
+    DateInput,
 )
 
-from main.models import Education, Project, Skill
+from main.models import Education, Project, Skill, Experience
+
 
 class ProjectForm(ModelForm):
     class Meta:
@@ -58,6 +61,7 @@ class ProjectForm(ModelForm):
                 }
             ),
         }
+
 
 class EducationForm(ModelForm):
     class Meta:
@@ -138,6 +142,7 @@ class EducationForm(ModelForm):
             "is_current": CheckboxInput(),
         }
 
+
 class SkillForm(ModelForm):
     class Meta:
         model = Skill
@@ -178,6 +183,63 @@ class SkillForm(ModelForm):
             "order": NumberInput(
                 attrs={
                     "min": 0,
+                }
+            ),
+        }
+
+
+class ExperienceForm(ModelForm):
+    class Meta:
+        model = Experience
+
+        fields = [
+            "title",
+            "description",
+            "category",
+            "thumbnail",
+            "started_at",
+            "ended_at",
+            "education",
+            "projects",
+        ]
+
+        labels = {
+            "title": "Judul Experience",
+            "description": "Deskripsi",
+            "category": "Kategori",
+            "thumbnail": "URL Thumbnail",
+            "started_at": "Tanggal Mulai",
+            "ended_at": "Tanggal Selesai",
+            "education": "Pendidikan Terkait",
+            "projects": "Project Terkait",
+        }
+
+        widgets = {
+            "title": TextInput(
+                attrs={
+                    "placeholder": "Asisten Dosen PBP",
+                }
+            ),
+            "description": Textarea(
+                attrs={
+                    "placeholder": "Ceritakan pengalaman ini...",
+                    "rows": 4,
+                }
+            ),
+            "category": Select(),
+            "thumbnail": URLInput(
+                attrs={
+                    "placeholder": "https://...",
+                }
+            ),
+            "started_at": DateInput(
+                attrs={
+                    "type": "date",
+                }
+            ),
+            "ended_at": DateInput(
+                attrs={
+                    "type": "date",
                 }
             ),
         }

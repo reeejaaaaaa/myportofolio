@@ -20,15 +20,42 @@ class Experience(models.Model):
         max_length=20, choices=EXPERIENCE_CHOICES, default="full-time"
     )
     thumbnail = models.URLField(blank=True, null=True)
-    started_at = models.DateTimeField(auto_now_add=True)
-    ended_at = models.DateTimeField(blank=True, null=True)
+    started_at = models.DateField()
 
+    ended_at = models.DateField(
+        blank=True,
+        null=True,
+        )
+
+    education = models.ForeignKey(
+        "Education",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="experiences",
+        )
+
+    projects = models.ManyToManyField(
+        "Project",
+        blank=True,
+        related_name="experiences",
+    )
+
+    starred_by = models.ManyToManyField(
+        User,
+        blank=True,
+        related_name="starred_experiences",
+    )
+    
     def __str__(self):
         return self.title
 
+    
     @property
     def is_ongoing(self):
         return self.ended_at is None
+    
+    
 
 
 class Education(models.Model):  ##new model untuk tugas 2

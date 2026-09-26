@@ -703,7 +703,7 @@ a.skill-edit-button:hover {
 }
 
 
-/* EXPERIENCE BUTTON */
+
 
 .education-actions {
     margin-top: auto;
@@ -767,14 +767,6 @@ a.skill-edit-button:hover {
     border-top: 1px solid var(--line);
 }
 
-.section-kicker {
-    color: var(--accent-dark);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
 .experience-section h1 {
     margin: 0.4rem 0 1.5rem;
     font-size: 2rem;
@@ -791,6 +783,8 @@ a.skill-edit-button:hover {
     background-color: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
 }
 
 .experience-category {
@@ -810,12 +804,108 @@ a.skill-edit-button:hover {
     color: var(--text-muted);
 }
 
+.experience-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+
+    margin-top: auto;
+    padding-top: 1.25rem;
+}
+
+.experience-actions .button {
+    width: auto;
+}
+
 .experience-status {
     margin-top: 1rem;
     font-size: 0.85rem;
     font-weight: 600;
 }
 
+.experience-related {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-top: 1rem;
+}
+
+.experience-related-label {
+    color: var(--accent-bright);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.experience-related-value {
+    color: var(--ink);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.experience-project-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.experience-project-link {
+    padding: 0.3rem 0.55rem;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+
+    color: var(--ink);
+    background-color: var(--deep-blue);
+
+    font-size: 0.75rem;
+    text-decoration: none;
+
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.experience-project-link:hover {
+    border-color: var(--accent);
+    background-color: var(--accent);
+    color: #ffffff;
+}
+
+.experience-related-empty {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.experience-thumbnail {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+
+    margin-bottom: 1rem;
+
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    transition:
+        transform 0.25s ease,
+        opacity 0.25s ease;
+}
+
+.experience-card:hover .experience-thumbnail {
+    transform: scale(1.02);
+}
+
+.experience-period {
+    margin-top: 0.3rem;
+
+    color: var(--text-muted);
+
+    font-size: 0.78rem;
+    font-weight: 600;
+}
 
 .project-header {
     width: 100%;
@@ -979,8 +1069,14 @@ a.skill-edit-button:hover {
     margin-top: 1.5rem;
 }
 
-.button-danger {
-    background: #b42318;
+.button.button-danger {
+    background-color: #b42318;
+    border-color: #b42318;
+}
+
+.button.button-danger:hover {
+    background-color: #d92d20;
+    border-color: #d92d20;
 }
 
 .project-form {
@@ -1112,6 +1208,11 @@ a.skill-edit-button:hover {
 }
 
 @media (max-width: 600px) {
+
+    .project-grid {
+        grid-template-columns: 1fr;
+    }
+
     .project-header {
         align-items: flex-start;
         flex-direction: column;
