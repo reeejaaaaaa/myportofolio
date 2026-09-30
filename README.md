@@ -25,29 +25,46 @@ myportofolio/
 │   └── views.py
 │
 ├── portofolio/
+│   ├── __init__.py
+│   ├── asgi.py
 │   ├── settings.py
 │   ├── urls.py
-│   ├── asgi.py
 │   └── wsgi.py
 │
 ├── static/
 │   ├── css/
 │   │   └── style.css
-│   └── img/
-│       ├── education/
-│       ├── favicon.png
-│       └── rheza.jpeg
+│   │
+│   ├── img/
+│   │   ├── education/
+│   │   ├── favicon.png
+│   │   └── rheza.jpeg
+│   │
+│   └── js/
+│       ├── experience.js
+│       ├── toast.js
+│       └── utils.js
 │
 ├── templates/
 │   ├── components/
-│   │   └── project_delete_modal.html
+│   │   ├── experience_form_modal.html
+│   │   ├── experience_star.html
+│   │   ├── project_delete_modal.html
+│   │   ├── project_form_modal.html
+│   │   ├── project_star.html
+│   │   └── toast.html
+│   │
 │   ├── base.html
 │   ├── education.html
 │   ├── education_form.html
 │   ├── experience.html
+│   ├── experience_form.html
 │   ├── index.html
+│   ├── login.html
 │   ├── projects.html
-│   └── projects_form.html
+│   ├── projects_form.html
+│   ├── register.html
+│   └── skill_form.html
 │
 ├── .gitignore
 ├── manage.py
@@ -59,55 +76,71 @@ myportofolio/
 
 ## 🧩 Tugas 5
 
-Pada Tugas 5, saya menerapkan pola interaktivitas berbasis JavaScript dan AJAX pada halaman Experience. Data Experience tidak lagi dirender langsung oleh Django template, tetapi diambil melalui endpoint JSON menggunakan Fetch API.
+Pada Tugas 5, saya menerapkan pola interaktivitas berbasis JavaScript dan AJAX pada halaman Experience.
 
 Implementasi yang dilakukan:
-- menampilkan data Experience menggunakan AJAX dan Fetch API;
-- menyusun respons JSON secara manual menggunakan `JsonResponse`;
-- menampilkan jumlah star dan status star pengguna yang sedang login;
-- menambahkan loading, empty, dan error state;
-- menambahkan pencarian Experience tanpa reload;
-- menerapkan debounce 300 ms pada pencarian;
-- menambahkan Experience melalui modal dan AJAX;
-- menangani response HTTP 201, 400, dan 403;
-- menyertakan CSRF token pada request POST;
-- menampilkan toast untuk response success maupun error;
-- melakukan escaping data pada JavaScript sebelum memasukkannya ke HTML;
-- melakukan sanitasi server-side menggunakan `strip_tags`;
-- menambahkan AJAX Star/Unstar tanpa reload;
-- menambahkan filter berdasarkan kategori Experience.
+- Menampilkan data Experience menggunakan Fetch API dan AJAX.
+- Menyusun respons JSON secara manual menggunakan `JsonResponse`.
+- Menampilkan informasi star berupa jumlah star dan status star pengguna yang sedang login.
+- Menambahkan loading state, empty state, dan error state.
+- Menambahkan pencarian Experience tanpa reload halaman.
+- Menggunakan debounce selama 300 ms pada pencarian.
+- Menambahkan Experience melalui modal dengan AJAX.
+- Menangani HTTP response 201, 400, dan 403.
+- Mengirim CSRF token pada request POST.
+- Menampilkan toast untuk kondisi berhasil maupun gagal.
+- Melakukan escaping data pada JavaScript sebelum data dimasukkan ke HTML.
+- Membersihkan input teks menggunakan `strip_tags` pada `ExperienceForm`.
+- Menambahkan Star/Unstar menggunakan AJAX tanpa reload halaman.
+- Menambahkan filter berdasarkan kategori Experience.
+- Menambahkan pengurutan berdasarkan newest, oldest, jumlah star, dan judul A-Z.
+- Menambahkan summary interaktif untuk total Experience, ongoing Experience, project terkait, dan total star.
+- Menambahkan Delete Experience melalui AJAX tanpa reload halaman.
 
 ### Pertanyaan Reflektif
 
-1. **Apa itu debouncing dan mengapa penting pada pencarian AJAX?**
+1. **Jelaskan apa itu debouncing dan mengapa teknik ini penting diterapkan pada fitur pencarian yang menggunakan AJAX!**
 
-   Debouncing adalah teknik untuk menunda eksekusi suatu fungsi sampai pengguna berhenti melakukan aksi selama waktu tertentu. Pada fitur pencarian saya menggunakan delay 300 ms. Tanpa debouncing, setiap karakter yang diketik dapat langsung menghasilkan request baru ke server. Hal tersebut dapat menghasilkan banyak request yang sebenarnya tidak diperlukan. Dengan debouncing, aplikasi menunggu pengguna berhenti mengetik terlebih dahulu sehingga request menjadi lebih sedikit dan penggunaan server maupun jaringan lebih efisien.
+   Debouncing adalah teknik untuk menunda eksekusi suatu fungsi sampai pengguna berhenti melakukan suatu aksi selama periode waktu tertentu. Pada fitur pencarian Experience, saya menggunakan delay 300 ms.
 
-2. **Apa fungsi `await` ketika menggunakan `fetch()`? Apa yang terjadi jika tidak menggunakan `await`?**
+   Tanpa debouncing, setiap karakter yang diketik pengguna dapat langsung mengirim request baru ke server. Hal ini dapat menghasilkan banyak request yang sebenarnya tidak diperlukan. Dengan debouncing, request baru dikirim setelah pengguna berhenti mengetik sehingga penggunaan jaringan dan server menjadi lebih efisien.
 
-   `fetch()` bersifat asynchronous dan menghasilkan sebuah Promise. Keyword `await` digunakan agar eksekusi pada fungsi `async` menunggu Promise tersebut selesai sebelum melanjutkan proses berikutnya. Misalnya, saya menggunakan `await fetch(...)` agar mendapatkan object `Response`, kemudian menggunakan `await response.json()` untuk menunggu body response selesai dikonversi menjadi data JavaScript.
+2. **Jelaskan fungsi dari penggunaan `await` ketika kita menggunakan `fetch()`! Apa yang akan terjadi jika kita tidak menggunakan `await`?**
 
-   Jika `await` tidak digunakan, variabel yang diperoleh masih berupa Promise dan bukan hasil request yang sebenarnya. Program harus menangani Promise tersebut menggunakan `.then()` atau mekanisme asynchronous lainnya. Jika langsung diperlakukan seperti hasil response biasa, kode dapat menghasilkan error atau berjalan sebelum data tersedia.
+   `fetch()` merupakan operasi asynchronous dan mengembalikan sebuah Promise. `await` digunakan di dalam fungsi `async` agar program menunggu Promise tersebut selesai sebelum melanjutkan ke proses berikutnya.
 
-3. **Apa itu XSS dan mengapa data AJAX/JavaScript lebih rentan dibanding data yang langsung dirender Django template?**
+   Pada implementasi saya, `await fetch(...)` digunakan untuk menunggu response dari server, sedangkan `await response.json()` digunakan untuk menunggu body response selesai dikonversi menjadi data JavaScript.
 
-   Cross-Site Scripting atau XSS adalah serangan ketika input berbahaya berupa HTML atau JavaScript berhasil dimasukkan ke halaman dan kemudian dijalankan oleh browser pengguna lain. Contohnya adalah input seperti `<img src="x" onerror="alert('XSS!')">`.
+   Jika tidak menggunakan `await`, variabel yang diperoleh masih berupa Promise dan bukan hasil response yang sebenarnya. Promise tersebut harus ditangani menggunakan `.then()` atau mekanisme asynchronous lainnya. Jika langsung digunakan seperti data biasa, program dapat berjalan sebelum data tersedia dan menghasilkan error.
 
-   Django template secara default melakukan escaping terhadap nilai yang dirender menggunakan sintaks `{{ variable }}`. Sebaliknya, ketika data dari AJAX dimasukkan secara manual menggunakan JavaScript seperti melalui `innerHTML`, developer bertanggung jawab melakukan escaping sendiri. Oleh karena itu, setiap nilai teks yang saya masukkan ke HTML melalui JavaScript diproses menggunakan `escapeHtml`. Selain itu, input teks juga dibersihkan di server menggunakan `strip_tags` pada `ModelForm` sebagai perlindungan tambahan.
+3. **Jelaskan apa itu serangan XSS dan mengapa data yang ditampilkan melalui AJAX/JavaScript lebih rentan terhadap serangan ini daripada data yang ditampilkan langsung melalui template Django!**
+
+   Cross-Site Scripting atau XSS adalah serangan ketika input berbahaya berupa HTML atau JavaScript berhasil dimasukkan ke halaman dan kemudian dijalankan oleh browser.
+
+   Django template secara default melakukan escaping terhadap nilai yang dirender menggunakan `{{ variable }}`. Namun, ketika data dari endpoint AJAX disisipkan secara manual menggunakan JavaScript seperti `innerHTML`, developer harus memastikan sendiri bahwa nilai tersebut sudah aman.
+
+   Pada halaman Experience, setiap nilai teks yang dimasukkan ke HTML melalui JavaScript diproses menggunakan `escapeHtml()`. Selain itu, input teks seperti title dan description dibersihkan di sisi server menggunakan `strip_tags()` pada `ExperienceForm`. Dengan demikian perlindungan dilakukan baik di frontend maupun backend.
 
 ### 🤖 AI Disclosure
 
-Pada Tugas 5, saya menggunakan ChatGPT sebagai alat bantu untuk memahami dan meninjau implementasi AJAX, Fetch API, debouncing, CSRF, response HTTP, modal, sanitasi input, dan perlindungan XSS.
+Pada Tugas 5, saya menggunakan ChatGPT sebagai alat bantu untuk memahami, meninjau, dan melakukan debugging implementasi AJAX, Fetch API, JavaScript, debouncing, CSRF, modal, toast, authorization, serta perlindungan XSS.
 
-Strategi penggunaan AI yang saya lakukan meliputi:
-- memberikan struktur project dan kode yang sedang digunakan agar saran menyesuaikan implementasi aktual;
-- meminta pengecekan terhadap alur dari Django view, endpoint JSON, template, hingga JavaScript;
-- menggunakan AI untuk membantu menemukan kode lama yang tidak lagi diperlukan setelah halaman diubah menjadi AJAX;
-- meminta bantuan dalam menyusun test untuk berbagai role dan response HTTP;
-- meminta penjelasan penyebab error sebelum menerapkan perubahan.
+AI digunakan untuk membantu:
+- meninjau struktur project Django yang sudah dibuat pada tugas sebelumnya;
+- merancang perubahan halaman Experience dari server-side rendering menjadi AJAX;
+- membantu penyusunan endpoint JSON manual;
+- membantu implementasi pencarian dengan debouncing;
+- membantu implementasi modal dan AJAX POST;
+- membantu implementasi AJAX Star/Unstar dan Delete;
+- membantu mengidentifikasi kode lama yang sudah tidak dibutuhkan setelah halaman menggunakan AJAX;
+- membantu debugging error pada JavaScript dan Django;
+- membantu menyusun automated test untuk fitur Tugas 5;
+- membantu meninjau perlindungan XSS pada frontend dan backend.
 
-Saya tetap melakukan implementasi, menjalankan migration/check/test, memeriksa hasil melalui browser, menguji role pengguna, serta melakukan debugging secara manual sebelum perubahan disimpan ke Git.
+Saya tetap melakukan implementasi pada project lokal, menjalankan Django system check dan automated test, menguji aplikasi melalui browser dan Developer Tools, menguji berbagai role pengguna, serta memverifikasi hasil setiap perubahan secara manual.
 
 ### Keterbatasan Penggunaan AI
 
-AI tidak dapat mengetahui kondisi browser, database, session, atau environment lokal secara langsung tanpa informasi yang saya berikan. Beberapa solusi juga perlu disesuaikan ketika struktur project berubah dari tugas sebelumnya. Karena itu, setiap saran AI tetap saya verifikasi menggunakan Django system check, automated test, browser developer tools, dan pengujian manual sebelum digunakan.
+AI tidak dapat mengetahui secara langsung keadaan browser, database, session, environment lokal, maupun perubahan file terbaru tanpa kode atau error log yang saya berikan. Beberapa saran juga perlu disesuaikan kembali karena struktur project berkembang dari tugas-tugas sebelumnya.
+
+Karena itu, setiap saran dari AI tetap saya verifikasi menggunakan `python manage.py check`, automated test, browser Developer Tools, serta pengujian manual sebelum digunakan.
