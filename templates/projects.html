@@ -11,14 +11,14 @@ Projects - Rheza Abdilla
             <p class="section-kicker">Karya yang saya bangun</p>
             <div class="project-header">
                 <h1>Projects</h1>
-                {% if user.is_superuser %}
+
                 {% if user.is_superuser %}
                 <button type="button" class="button project-add-button" popovertarget="add-project-modal">
                     <span aria-hidden="true">+</span>
                     Tambah Proyek
                 </button>
                 {% endif %}
-                {% endif %}
+
             </div>
             <form id="project-search-form" class="project-search">
                 <input type="search" id="search-input" name="title" value="{{ title_query }}"
@@ -49,41 +49,7 @@ Projects - Rheza Abdilla
             </div>
 
             <div id="grid" class="experience-grid project-grid hide"></div>
-            <div class="experience-grid project-grid">
-                {% for project in project_list %}
-                <article class="experience-card">
-                    {% if project.project_image_url %}
-                    <img src="{{ project.project_image_url }}" alt="Gambar {{ project.title }}" class="project-image">
-                    {% endif %}
-                    <h2>{{ project.title }}</h2>
-                    <span class="experience-category">{{ project.tech_stack }}</span>
-                    <p class="experience-description">{{ project.description }}</p>
-                    <div class="project-card-actions">
-                        <div class="project-actions">
 
-                            {% if project.project_url %}
-                            <a href="{{ project.project_url }}" class="button">
-                                Lihat Project
-                            </a>
-                            {% endif %}
-
-                            {% include "components/project_star.html" with project=project %}
-
-                            {% if user.is_superuser %}
-                            {% include "components/project_delete_modal.html" with project=project %}
-                            {% endif %}
-
-                        </div>
-                    </div>
-                </article>
-                {% empty %}
-                {% if title_query %}
-                <p class="empty-state">Tidak ada proyek dengan nama tersebut.</p>
-                {% else %}
-                <p class="empty-state">Belum ada proyek yang ditambahkan.</p>
-                {% endif %}
-                {% endfor %}
-            </div>
         </div>
     </section>
 </main>
@@ -148,14 +114,7 @@ Projects - Rheza Abdilla
         );
     }
 
-    function escapeHtml(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#39;");
-    }
+
 
     function buildProjectCardElement(item) {
         const project = item.fields;
@@ -434,45 +393,6 @@ Projects - Rheza Abdilla
         document.getElementById("project-form");
 
 
-    function getCookie(name) {
-        let cookieValue = null;
-
-        if (
-            document.cookie &&
-            document.cookie !== ""
-        ) {
-            const cookies =
-                document.cookie.split(";");
-
-            for (
-                let i = 0;
-                i < cookies.length;
-                i++
-            ) {
-                const cookie =
-                    cookies[i].trim();
-
-                if (
-                    cookie.substring(
-                        0,
-                        name.length + 1
-                    ) ===
-                    name + "="
-                ) {
-                    cookieValue =
-                        decodeURIComponent(
-                            cookie.substring(
-                                name.length + 1
-                            )
-                        );
-
-                    break;
-                }
-            }
-        }
-
-        return cookieValue;
-    }
 
 
     async function addProject(event) {
