@@ -1397,6 +1397,67 @@ a.skill-edit-button:hover {
     min-height: 40px;
 }
 
+.experience-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 1rem;
+
+    margin-bottom: 2rem;
+}
+
+.experience-summary-card {
+    padding: 1.25rem;
+
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+
+    background-color: var(--surface);
+}
+
+.experience-summary-label {
+    display: block;
+
+    margin-bottom: 0.4rem;
+
+    color: var(--text-muted);
+
+    font-size: 0.72rem;
+    font-weight: 700;
+
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.experience-summary-value {
+    display: block;
+
+    color: var(--accent-bright);
+
+    font-family:
+        "Space Grotesk",
+        -apple-system,
+        sans-serif;
+
+    font-size: 2rem;
+    line-height: 1;
+}
+
+
+@media (max-width: 700px) {
+    .experience-summary {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+}
+
+
+@media (max-width: 420px) {
+    .experience-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 600px) {
     .experience-toolbar .project-search {
         flex-direction: column;

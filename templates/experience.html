@@ -9,17 +9,11 @@ Experience - Rheza Abdilla
 
 <main>
 
-    <section
-        class="experience-section"
-        id="experience-app"
-        data-experiences-url="{% url 'main:get_experiences_json' %}"
-        data-create-url="{% url 'main:create_experience_ajax' %}"
-        data-projects-url="{% url 'main:show_projects' %}"
-        data-login-url="{% url 'main:login' %}"
-        data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"
+    <section class="experience-section" id="experience-app" data-experiences-url="{% url 'main:get_experiences_json' %}"
+        data-create-url="{% url 'main:create_experience_ajax' %}" data-projects-url="{% url 'main:show_projects' %}"
+        data-login-url="{% url 'main:login' %}" data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"
         data-is-editor="{{ is_editor|yesno:'true,false' }}"
-        data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
-    >
+        data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}">
 
         <div class="container">
 
@@ -36,11 +30,7 @@ Experience - Rheza Abdilla
                 </div>
 
                 {% if user.is_superuser %}
-                <button
-                    type="button"
-                    class="button project-add-button"
-                    popovertarget="add-experience-modal"
-                >
+                <button type="button" class="button project-add-button" popovertarget="add-experience-modal">
                     <span aria-hidden="true">+</span>
                     Add Experience
                 </button>
@@ -50,24 +40,13 @@ Experience - Rheza Abdilla
 
             <div class="experience-toolbar">
 
-                <form
-                    id="experience-search-form"
-                    class="project-search"
-                >
+                <form id="experience-search-form" class="project-search">
 
-                    <input
-                        type="search"
-                        id="experience-search-input"
-                        class="project-search__input"
-                        placeholder="Cari berdasarkan nama experience"
-                        aria-label="Cari experience"
-                    >
+                    <input type="search" id="experience-search-input" class="project-search__input"
+                        placeholder="Cari berdasarkan nama experience" aria-label="Cari experience">
 
-                    <select
-                        id="experience-category-filter"
-                        class="project-search__input experience-filter"
-                        aria-label="Filter kategori experience"
-                    >
+                    <select id="experience-category-filter" class="project-search__input experience-filter"
+                        aria-label="Filter kategori experience">
                         <option value="">
                             Semua kategori
                         </option>
@@ -97,49 +76,95 @@ Experience - Rheza Abdilla
                         </option>
                     </select>
 
-                    <button
-                        type="submit"
-                        class="button"
-                    >
+                    <select id="experience-sort" class="project-search__input experience-filter"
+                        aria-label="Urutkan experience">
+                        <option value="newest">
+                            Newest First
+                        </option>
+
+                        <option value="oldest">
+                            Oldest First
+                        </option>
+
+                        <option value="stars">
+                            Most Starred
+                        </option>
+
+                        <option value="az">
+                            A-Z
+                        </option>
+                    </select>
+
+                    <button type="submit" class="button">
                         Cari
                     </button>
 
                 </form>
 
             </div>
+            <div class="experience-summary">
 
-            <div
-                id="experience-loading"
-                class="empty-state hide"
-            >
+                <div class="experience-summary-card">
+                    <span class="experience-summary-label">
+                        Total Experience
+                    </span>
+
+                    <strong id="summary-total" class="experience-summary-value">
+                        0
+                    </strong>
+                </div>
+
+                <div class="experience-summary-card">
+                    <span class="experience-summary-label">
+                        Ongoing
+                    </span>
+
+                    <strong id="summary-ongoing" class="experience-summary-value">
+                        0
+                    </strong>
+                </div>
+
+                <div class="experience-summary-card">
+                    <span class="experience-summary-label">
+                        Projects Linked
+                    </span>
+
+                    <strong id="summary-projects" class="experience-summary-value">
+                        0
+                    </strong>
+                </div>
+
+                <div class="experience-summary-card">
+                    <span class="experience-summary-label">
+                        Total Stars
+                    </span>
+
+                    <strong id="summary-stars" class="experience-summary-value">
+                        0
+                    </strong>
+                </div>
+
+            </div>
+            <div id="experience-loading" class="empty-state hide">
                 <p>
                     Memuat experience...
                 </p>
             </div>
 
-            <div
-                id="experience-error"
-                class="empty-state hide"
-            >
+            <div id="experience-error" class="empty-state hide">
                 <p>
                     Gagal memuat experience.
                     Silakan coba lagi.
                 </p>
             </div>
 
-            <div
-                id="experience-empty"
-                class="empty-state hide"
-            >
+            <div id="experience-empty" class="empty-state hide">
                 <p>
                     Tidak ada experience yang ditemukan.
                 </p>
             </div>
 
-            <div
-                id="experience-grid"
-                class="experience-grid hide"
-            ></div>
+            <div id="experience-grid" class="experience-grid hide"></div>
 
         </div>
 

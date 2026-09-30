@@ -65,6 +65,29 @@
             "experience-category-filter"
         );
 
+    const sortSelect =
+        document.getElementById(
+            "experience-sort"
+        );
+    const summaryTotal =
+        document.getElementById(
+            "summary-total"
+        );
+
+    const summaryOngoing =
+        document.getElementById(
+            "summary-ongoing"
+        );
+
+    const summaryProjects =
+        document.getElementById(
+            "summary-projects"
+        );
+
+    const summaryStars =
+        document.getElementById(
+            "summary-stars"
+        );
     const experienceForm =
         document.getElementById(
             "experience-form"
@@ -224,134 +247,183 @@
                 `
                 : "";
 
-
         const deleteHtml =
             isSuperuser
                 ? `
-                    <form
-                        method="post"
-                        action="${escapeHtml(experience.delete_url)}"
-                        class="experience-delete-form"
-                    >
-                        <input
-                            type="hidden"
-                            name="csrfmiddlewaretoken"
-                            value="${escapeHtml(
-                                getCookie("csrftoken") || ""
-                            )}"
-                        >
-
-                        <button
-                            type="submit"
-                            class="button button-danger"
-                        >
-                            Delete
-                        </button>
-                    </form>
-                `
+            <button
+                type="button"
+                class="button button-danger"
+                data-delete-url="${escapeHtml(
+                    experience.delete_url
+                )}"
+                data-experience-title="${escapeHtml(
+                    experience.title
+                )}"
+            >
+                Delete
+            </button>
+        `
                 : "";
 
 
         article.innerHTML = `
-            ${thumbnailHtml}
+    ${thumbnailHtml}
 
-            <span class="experience-category">
-                ${escapeHtml(
-                    experience.category_display
-                )}
-            </span>
+    <span class="experience-category">
+        ${escapeHtml(
+            experience.category_display
+        )}
+    </span>
 
-            <p class="experience-period">
-                ${escapeHtml(experience.started_at)}
-                —
-                ${
+    <p class="experience-period">
+        ${escapeHtml(
+            experience.started_at
+        )}
+        —
+        ${experience.ended_at
+                ? escapeHtml(
                     experience.ended_at
-                        ? escapeHtml(
-                            experience.ended_at
-                        )
-                        : "Present"
-                }
-            </p>
+                )
+                : "Present"
+            }
+    </p>
 
-            <h2>
-                ${escapeHtml(experience.title)}
-            </h2>
+    <h2>
+        ${escapeHtml(
+                experience.title
+            )}
+    </h2>
 
-            <p class="experience-description">
-                ${escapeHtml(experience.description)}
-            </p>
+    <p class="experience-description">
+        ${escapeHtml(
+                experience.description
+            )}
+    </p>
 
-            ${educationHtml}
+    ${educationHtml}
 
-            <div class="experience-related">
+    <div class="experience-related">
 
-                <span class="experience-related-label">
-                    Related Projects
-                </span>
+        <span class="experience-related-label">
+            Related Projects
+        </span>
 
-                <div class="experience-project-list">
-                    ${buildProjectLinks(
-                        experience.projects
-                    )}
-                </div>
+        <div class="experience-project-list">
+            ${buildProjectLinks(
+                experience.projects
+            )}
+        </div>
 
-            </div>
+    </div>
 
-            <p class="experience-status">
-                ${
-                    experience.is_ongoing
-                        ? "Sedang berlangsung"
-                        : "Selesai"
-                }
-            </p>
+    <p class="experience-status">
+        ${experience.is_ongoing
+                ? "Sedang berlangsung"
+                : "Selesai"
+            }
+    </p>
 
-            <div class="experience-actions">
-                ${starHtml}
-                ${editHtml}
-                ${deleteHtml}
-            </div>
-        `;
-
-
-        const deleteForm =
-            article.querySelector(
-                ".experience-delete-form"
-            );
-
-        if (deleteForm) {
-            deleteForm.addEventListener(
-                "submit",
-                event => {
-                    const confirmed =
-                        window.confirm(
-                            "Yakin ingin menghapus experience ini?"
-                        );
-
-                    if (!confirmed) {
-                        event.preventDefault();
-                    }
-                }
-            );
-        }
+    <div class="experience-actions">
+        ${starHtml}
+        ${editHtml}
+        ${deleteHtml}
+    </div>
+`;
 
 
         return article;
     }
 
 
+
+
+    function updateSummary(data) {
+        const ongoingCount =
+            data.filter(
+                item =>
+                    item.fields.is_ongoing
+            ).length;
+
+
+        const uniqueProjectIds =
+            new Set();
+
+
+        let totalStars = 0;
+
+
+        data.forEach(item => {
+            const experience =
+                item.fields;
+
+
+            totalStars +=
+                experience.star_count;
+
+
+            experience.projects.forEach(
+                project => {
+                    uniqueProjectIds.add(
+                        project.id
+                    );
+                }
+            );
+        });
+
+
+        summaryTotal.textContent =
+            data.length;
+
+        summaryOngoing.textContent =
+            ongoingCount;
+
+        summaryProjects.textContent =
+            uniqueProjectIds.size;
+
+        summaryStars.textContent =
+            totalStars;
+    }
+
     function renderExperiences() {
         const selectedCategory =
             categoryFilter.value;
 
-        const filteredData =
+        let filteredData =
             selectedCategory
                 ? currentExperienceData.filter(
                     item =>
                         item.fields.category ===
                         selectedCategory
                 )
-                : currentExperienceData;
+                : [...currentExperienceData];
 
+
+        if (sortSelect.value === "oldest") {
+            filteredData.reverse();
+        }
+
+
+        if (sortSelect.value === "stars") {
+            filteredData.sort(
+                (a, b) =>
+                    b.fields.star_count -
+                    a.fields.star_count
+            );
+        }
+
+
+        if (sortSelect.value === "az") {
+            filteredData.sort(
+                (a, b) =>
+                    a.fields.title.localeCompare(
+                        b.fields.title
+                    )
+            );
+        }
+
+        updateSummary(
+            filteredData
+        );
 
         grid.innerHTML = "";
 
@@ -506,9 +578,100 @@
     );
 
 
+
+
+    sortSelect.addEventListener(
+        "change",
+        renderExperiences
+    );
+
     grid.addEventListener(
         "click",
         async event => {
+            const deleteButton =
+                event.target.closest(
+                    "[data-delete-url]"
+                );
+
+            if (deleteButton) {
+                const experienceTitle =
+                    deleteButton.dataset.experienceTitle;
+
+                const confirmed =
+                    window.confirm(
+                        `Yakin ingin menghapus "${experienceTitle}"?`
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                deleteButton.disabled = true;
+
+                try {
+                    const response =
+                        await fetch(
+                            deleteButton.dataset.deleteUrl,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "X-CSRFToken":
+                                        getCookie(
+                                            "csrftoken"
+                                        ),
+
+                                    "X-Requested-With":
+                                        "XMLHttpRequest",
+
+                                    "Accept":
+                                        "application/json"
+                                }
+                            }
+                        );
+
+                    const result =
+                        await response
+                            .json()
+                            .catch(
+                                () => ({})
+                            );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            result.message ||
+                            "Gagal menghapus experience."
+                        );
+                    }
+
+                    showToast(
+                        "Berhasil",
+                        result.message,
+                        "success"
+                    );
+
+                    fetchExperiences(
+                        searchInput.value.trim()
+                    );
+
+                } catch (error) {
+                    console.error(
+                        "Error deleting experience:",
+                        error
+                    );
+
+                    showToast(
+                        "Gagal menghapus",
+                        error.message,
+                        "error"
+                    );
+
+                } finally {
+                    deleteButton.disabled = false;
+                }
+
+                return;
+            }
             const starButton =
                 event.target.closest(
                     "[data-star-url]"
