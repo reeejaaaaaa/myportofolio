@@ -1373,6 +1373,57 @@ a.skill-edit-button:hover {
     margin-top: 1.5rem;
 }
 
+.experience-toolbar {
+    margin-bottom: 1.5rem;
+}
+
+.experience-toolbar .project-search {
+    margin-bottom: 0;
+}
+
+.experience-filter {
+    max-width: 220px;
+}
+
+.experience-delete-form {
+    display: inline-flex;
+}
+
+.experience-actions {
+    min-height: 44px;
+}
+
+.experience-actions .button {
+    min-height: 40px;
+}
+
+@media (max-width: 600px) {
+    .experience-toolbar .project-search {
+        flex-direction: column;
+    }
+
+    .experience-filter {
+        max-width: none;
+    }
+
+    .experience-toolbar .button {
+        width: 100%;
+    }
+
+    .experience-actions {
+        align-items: stretch;
+    }
+
+    .experience-actions .button,
+    .experience-delete-form {
+        width: 100%;
+    }
+
+    .experience-delete-form .button {
+        width: 100%;
+    }
+}
+
 @media (max-width: 600px) {
     .project-form-modal {
         align-items: flex-end;
