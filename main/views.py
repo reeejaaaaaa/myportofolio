@@ -227,19 +227,76 @@ def get_projects_json(request):
         safe=False,
     )
 
-
 @login_required(login_url="/login/")
+@require_POST
 def delete_project(request, project_id):
     if not request.user.is_superuser:
         raise PermissionDenied
-    project = get_object_or_404(Project, pk=project_id)
 
-    if request.method == "POST":
-        project.delete()
-        messages.success(request, "Project berhasil dihapus!")
-        return redirect("main:show_projects")
+    project = get_object_or_404(
+        Project,
+        pk=project_id,
+    )
 
-    return redirect("main:show_projects")
+    project.delete()
+
+    messages.success(
+        request,
+        "Project berhasil dihapus!",
+    )
+
+    return redirect(
+        "main:show_projects"
+    )
+
+
+@login_required(login_url="/login/")
+@require_POST
+def delete_experience(request, experience_id):
+    if not request.user.is_superuser:
+        if (
+            request.headers.get("X-Requested-With")
+            == "XMLHttpRequest"
+        ):
+            return JsonResponse(
+                {
+                    "message": (
+                        "Kamu tidak memiliki izin "
+                        "untuk menghapus experience."
+                    )
+                },
+                status=403,
+            )
+
+        raise PermissionDenied
+
+    experience = get_object_or_404(
+        Experience,
+        pk=experience_id,
+    )
+
+    experience.delete()
+
+    if (
+        request.headers.get("X-Requested-With")
+        == "XMLHttpRequest"
+    ):
+        return JsonResponse(
+            {
+                "message":
+                    "Experience berhasil dihapus."
+            },
+            status=200,
+        )
+
+    messages.success(
+        request,
+        "Experience berhasil dihapus!",
+    )
+
+    return redirect(
+        "main:show_experience"
+    )
 
 
 @login_required(login_url="/login/")
