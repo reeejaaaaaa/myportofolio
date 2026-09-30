@@ -57,53 +57,57 @@ myportofolio/
 
 # 📚 Refleksi Tugas
 
-## 🧩 Tugas 4
+## 🧩 Tugas 5
 
-Pada Tugas 4, saya mengimplementasikan authentication dan authorization menggunakan sistem bawaan Django.
+Pada Tugas 5, saya menerapkan pola interaktivitas berbasis JavaScript dan AJAX pada halaman Experience. Data Experience tidak lagi dirender langsung oleh Django template, tetapi diambil melalui endpoint JSON menggunakan Fetch API.
 
 Implementasi yang dilakukan:
-- Register, login, dan logout pengguna.
-- Session dan cookie `last_login`.
-- Role `Editor` menggunakan Django Group.
-- Pembatasan akses untuk visitor, regular user, Editor, dan superuser.
-- Create dan delete Education hanya untuk superuser.
-- Update Education untuk Editor dan superuser.
-- Tombol CRUD disembunyikan sesuai hak akses.
-- Fitur star/unstar pada Experience menggunakan `ManyToManyField` ke `User`.
-- Menampilkan jumlah star dan status star pengguna.
-- Endpoint JSON tetap dapat digunakan tanpa mengekspos ID pengguna secara langsung.
+- menampilkan data Experience menggunakan AJAX dan Fetch API;
+- menyusun respons JSON secara manual menggunakan `JsonResponse`;
+- menampilkan jumlah star dan status star pengguna yang sedang login;
+- menambahkan loading, empty, dan error state;
+- menambahkan pencarian Experience tanpa reload;
+- menerapkan debounce 300 ms pada pencarian;
+- menambahkan Experience melalui modal dan AJAX;
+- menangani response HTTP 201, 400, dan 403;
+- menyertakan CSRF token pada request POST;
+- menampilkan toast untuk response success maupun error;
+- melakukan escaping data pada JavaScript sebelum memasukkannya ke HTML;
+- melakukan sanitasi server-side menggunakan `strip_tags`;
+- menambahkan AJAX Star/Unstar tanpa reload;
+- menambahkan filter berdasarkan kategori Experience.
 
+### Pertanyaan Reflektif
+
+1. **Apa itu debouncing dan mengapa penting pada pencarian AJAX?**
+
+   Debouncing adalah teknik untuk menunda eksekusi suatu fungsi sampai pengguna berhenti melakukan aksi selama waktu tertentu. Pada fitur pencarian saya menggunakan delay 300 ms. Tanpa debouncing, setiap karakter yang diketik dapat langsung menghasilkan request baru ke server. Hal tersebut dapat menghasilkan banyak request yang sebenarnya tidak diperlukan. Dengan debouncing, aplikasi menunggu pengguna berhenti mengetik terlebih dahulu sehingga request menjadi lebih sedikit dan penggunaan server maupun jaringan lebih efisien.
+
+2. **Apa fungsi `await` ketika menggunakan `fetch()`? Apa yang terjadi jika tidak menggunakan `await`?**
+
+   `fetch()` bersifat asynchronous dan menghasilkan sebuah Promise. Keyword `await` digunakan agar eksekusi pada fungsi `async` menunggu Promise tersebut selesai sebelum melanjutkan proses berikutnya. Misalnya, saya menggunakan `await fetch(...)` agar mendapatkan object `Response`, kemudian menggunakan `await response.json()` untuk menunggu body response selesai dikonversi menjadi data JavaScript.
+
+   Jika `await` tidak digunakan, variabel yang diperoleh masih berupa Promise dan bukan hasil request yang sebenarnya. Program harus menangani Promise tersebut menggunakan `.then()` atau mekanisme asynchronous lainnya. Jika langsung diperlakukan seperti hasil response biasa, kode dapat menghasilkan error atau berjalan sebelum data tersedia.
+
+3. **Apa itu XSS dan mengapa data AJAX/JavaScript lebih rentan dibanding data yang langsung dirender Django template?**
+
+   Cross-Site Scripting atau XSS adalah serangan ketika input berbahaya berupa HTML atau JavaScript berhasil dimasukkan ke halaman dan kemudian dijalankan oleh browser pengguna lain. Contohnya adalah input seperti `<img src="x" onerror="alert('XSS!')">`.
+
+   Django template secara default melakukan escaping terhadap nilai yang dirender menggunakan sintaks `{{ variable }}`. Sebaliknya, ketika data dari AJAX dimasukkan secara manual menggunakan JavaScript seperti melalui `innerHTML`, developer bertanggung jawab melakukan escaping sendiri. Oleh karena itu, setiap nilai teks yang saya masukkan ke HTML melalui JavaScript diproses menggunakan `escapeHtml`. Selain itu, input teks juga dibersihkan di server menggunakan `strip_tags` pada `ModelForm` sebagai perlindungan tambahan.
 
 ### 🤖 AI Disclosure
 
-Pada Tugas 4, AI digunakan untuk membantu memahami alur authentication, authorization, Django Group, session/cookie, serta debugging implementasi role dan relasi antar model. Saya tetap melakukan implementasi, konfigurasi role melalui Django Admin, pengujian manual setiap level akses, dan penyesuaian struktur kode secara mandiri.
+Pada Tugas 5, saya menggunakan ChatGPT sebagai alat bantu untuk memahami dan meninjau implementasi AJAX, Fetch API, debouncing, CSRF, response HTTP, modal, sanitasi input, dan perlindungan XSS.
 
-### 🛠️ Penggunaan AI
-AI digunakan untuk membantu:
-- memahami alur authentication, session, dan cookie pada Django;
-- memahami perbedaan authentication dan authorization;
-- membantu implementasi role visitor, regular user, Editor, dan superuser;
-- membantu penggunaan Django Group untuk role Editor;
-- membantu implementasi server-side access control menggunakan `login_required`, `is_superuser`, dan pengecekan Group;
-- membantu membuat fitur star/unstar menggunakan relasi `ManyToManyField` ke `User`;
-- membantu menjaga endpoint JSON tetap aman dengan natural foreign key;
-- membantu debugging error pada routing, form, template, permission, dan relasi model;
-- membantu merapikan UI tombol Create, Edit, Delete, Star, modal konfirmasi, dan tampilan Experience;
+Strategi penggunaan AI yang saya lakukan meliputi:
+- memberikan struktur project dan kode yang sedang digunakan agar saran menyesuaikan implementasi aktual;
+- meminta pengecekan terhadap alur dari Django view, endpoint JSON, template, hingga JavaScript;
+- menggunakan AI untuk membantu menemukan kode lama yang tidak lagi diperlukan setelah halaman diubah menjadi AJAX;
+- meminta bantuan dalam menyusun test untuk berbagai role dan response HTTP;
+- meminta penjelasan penyebab error sebelum menerapkan perubahan.
 
-### 🧑‍💻 Pengerjaan Mandiri
+Saya tetap melakukan implementasi, menjalankan migration/check/test, memeriksa hasil melalui browser, menguji role pengguna, serta melakukan debugging secara manual sebelum perubahan disimpan ke Git.
 
-Saya tetap melakukan implementasi, penyesuaian kode, pemilihan desain, pengecekan desktop/mobile, serta deployment secara mandiri. Beberapa solusi juga saya sesuaikan sendiri setelah melihat hasil langsung di browser.
+### Keterbatasan Penggunaan AI
 
-### ⚠️ Keterbatasan AI
-
-ChatGPT memiliki beberapa keterbatasan selama proses pengembangan ini:
-
-- AI tidak dapat melihat kondisi project dan environment lokal secara langsung tanpa kode, screenshot, atau error log yang diberikan.
-- Solusi yang diberikan AI masih perlu diuji karena bisa saja tidak sepenuhnya sesuai dengan struktur project terbaru.
-- AI dapat memberikan saran yang secara konsep benar tetapi masih membutuhkan penyesuaian pada routing, import, indentation, atau template yang sudah ada.
-- AI tidak menggantikan proses debugging dan verifikasi manual, terutama untuk permission, migration, dan behavior aplikasi di browser.
-- Saran syntax masih harus dikembangkan lagi agar menyesuaikan keinginan (terkadang masih terkesan kuno)
-
-Karena itu, AI saya gunakan sebagai alat bantu, sedangkan keputusan akhir, pengujian, dan implementasi tetap saya lakukan sendiri.
----
-
+AI tidak dapat mengetahui kondisi browser, database, session, atau environment lokal secara langsung tanpa informasi yang saya berikan. Beberapa solusi juga perlu disesuaikan ketika struktur project berubah dari tugas sebelumnya. Karena itu, setiap saran AI tetap saya verifikasi menggunakan Django system check, automated test, browser developer tools, dan pengujian manual sebelum digunakan.
