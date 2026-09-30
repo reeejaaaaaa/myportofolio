@@ -35,30 +35,93 @@ class MainTest(TestCase):
         self.assertTrue(self.experience.is_ongoing)
 
     def test_experience_page(self):
-        response = self.client.get(reverse("main:show_experience"))
+        response = self.client.get(
+            reverse("main:show_experience")
+        )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "experience.html")
-        self.assertContains(response, self.experience.title)
-        self.assertContains(response, self.experience.description)
-        self.assertContains(response, "Part-Time")
-        self.assertContains(response, "Sedang berlangsung")
-        self.assertContains(response, f'href="{reverse("main:show_main")}"')
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertTemplateUsed(
+            response,
+            "experience.html",
+        )
+
+        self.assertContains(
+            response,
+            'id="experience-grid"'
+        )
 
     def test_empty_experience_page(self):
         Experience.objects.all().delete()
-        response = self.client.get(reverse("main:show_experience"))
 
-        self.assertContains(response, "Belum ada pengalaman yang ditambahkan.")
+        response = self.client.get(
+            reverse("main:get_experiences_json")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertEqual(
+            response.json(),
+            [],
+        )
 
     def test_completed_experience(self):
-        self.experience.ended_at = date(2026, 2, 1)
+        self.experience.ended_at = date(
+            2026,
+            2,
+            1,
+        )
         self.experience.save()
-        response = self.client.get(reverse("main:show_experience"))
 
-        self.assertFalse(self.experience.is_ongoing)
-        self.assertContains(response, "Selesai")
-        self.assertNotContains(response, "Sedang berlangsung")
+        response = self.client.get(
+            reverse("main:get_experiences_json")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        data = response.json()
+
+        self.assertEqual(
+            len(data),
+            1,
+        )
+
+        fields = data[0]["fields"]
+
+        self.assertFalse(
+            fields["is_ongoing"]
+        )
+
+        self.assertEqual(
+            fields["ended_at"],
+            "Feb 2026",
+        )
+
+    def test_empty_experience_json(self):
+        Experience.objects.all().delete()
+
+        response = self.client.get(
+            reverse("main:get_experiences_json")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertEqual(
+            response.json(),
+            [],
+        )
 
 
 class EducationTest(TestCase):
@@ -657,4 +720,325 @@ class Tugas4Test(TestCase):
         self.assertContains(
             response,
             "Delete",
+        )
+
+class Tugas5ExperienceAjaxTest(TestCase):
+    def setUp(self):
+        self.regular_user = User.objects.create_user(
+            username="regular_t5",
+            password="testpass123",
+        )
+
+        self.superuser = User.objects.create_superuser(
+            username="admin_t5",
+            password="testpass123",
+        )
+
+        self.education = Education.objects.create(
+            institution="Universitas Indonesia",
+            level="undergraduate",
+            entry_year=2025,
+            graduation_year=2029,
+            gpa="3.50",
+            logo_path="",
+            experience_anchor="ui-t5",
+            order=1,
+            is_current=True,
+        )
+
+        self.experience = Experience.objects.create(
+            title="Research Assistant",
+            description="Mengerjakan penelitian AI.",
+            category="research",
+            started_at=date(2026, 1, 1),
+            ended_at=None,
+            education=self.education,
+        )
+
+    def test_experience_page_accessible_for_guest(self):
+        response = self.client.get(
+            reverse("main:show_experience")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertTemplateUsed(
+            response,
+            "experience.html",
+        )
+
+    def test_experience_json_is_manual_ajax_payload(self):
+        response = self.client.get(
+            reverse("main:get_experiences_json")
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        data = response.json()
+
+        self.assertEqual(
+            len(data),
+            1,
+        )
+
+        fields = data[0]["fields"]
+
+        self.assertEqual(
+            fields["title"],
+            "Research Assistant",
+        )
+
+        self.assertEqual(
+            fields["category"],
+            "research",
+        )
+
+        self.assertEqual(
+            fields["star_count"],
+            0,
+        )
+
+        self.assertFalse(
+            fields["is_starred"]
+        )
+
+        self.assertIn(
+            "starred_by_names",
+            fields,
+        )
+
+    def test_experience_search(self):
+        Experience.objects.create(
+            title="Teaching Assistant",
+            description="Mengajar mahasiswa.",
+            category="part-time",
+            started_at=date(2026, 2, 1),
+        )
+
+        response = self.client.get(
+            reverse(
+                "main:get_experiences_json"
+            ),
+            {
+                "q": "Research",
+            },
+        )
+
+        data = response.json()
+
+        self.assertEqual(
+            len(data),
+            1,
+        )
+
+        self.assertEqual(
+            data[0]["fields"]["title"],
+            "Research Assistant",
+        )
+
+    def test_logged_in_star_metadata(self):
+        self.experience.starred_by.add(
+            self.regular_user
+        )
+
+        self.client.login(
+            username="regular_t5",
+            password="testpass123",
+        )
+
+        response = self.client.get(
+            reverse(
+                "main:get_experiences_json"
+            )
+        )
+
+        fields = response.json()[0]["fields"]
+
+        self.assertEqual(
+            fields["star_count"],
+            1,
+        )
+
+        self.assertTrue(
+            fields["is_starred"]
+        )
+
+        self.assertIn(
+            "regular_t5",
+            fields["starred_by_names"],
+        )
+
+    def test_superuser_can_create_experience_ajax(self):
+        self.client.login(
+            username="admin_t5",
+            password="testpass123",
+        )
+
+        response = self.client.post(
+            reverse(
+                "main:create_experience_ajax"
+            ),
+            {
+                "title": "Cyber Security Research",
+                "description": "Mempelajari keamanan aplikasi web.",
+                "category": "research",
+                "thumbnail": "",
+                "started_at": "2026-03-01",
+                "ended_at": "",
+                "education": str(
+                    self.education.id
+                ),
+                "projects": [],
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            201,
+        )
+
+        self.assertTrue(
+            Experience.objects.filter(
+                title="Cyber Security Research"
+            ).exists()
+        )
+
+    def test_regular_user_cannot_create_experience_ajax(self):
+        self.client.login(
+            username="regular_t5",
+            password="testpass123",
+        )
+
+        response = self.client.post(
+            reverse(
+                "main:create_experience_ajax"
+            ),
+            {
+                "title": "Forbidden Experience",
+                "description": "Tidak boleh masuk.",
+                "category": "research",
+                "started_at": "2026-03-01",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            403,
+        )
+
+    def test_invalid_ajax_create_returns_400(self):
+        self.client.login(
+            username="admin_t5",
+            password="testpass123",
+        )
+
+        response = self.client.post(
+            reverse(
+                "main:create_experience_ajax"
+            ),
+            {
+                "title": "",
+                "description": "",
+                "category": "research",
+                "started_at": "",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            400,
+        )
+
+        self.assertIn(
+            "errors",
+            response.json(),
+        )
+
+    def test_experience_form_strips_xss(self):
+        self.client.login(
+            username="admin_t5",
+            password="testpass123",
+        )
+
+        response = self.client.post(
+            reverse(
+                "main:create_experience_ajax"
+            ),
+            {
+                "title": (
+                    "<script>alert('XSS')</script>"
+                    "Research"
+                ),
+                "description": (
+                    "<img src=x onerror=alert('XSS')>"
+                    "Deskripsi aman"
+                ),
+                "category": "research",
+                "thumbnail": "",
+                "started_at": "2026-04-01",
+                "ended_at": "",
+                "education": str(
+                    self.education.id
+                ),
+                "projects": [],
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            201,
+        )
+
+        experience = (
+            Experience.objects
+            .exclude(
+                id=self.experience.id
+            )
+            .latest("started_at")
+        )
+
+        self.assertNotIn(
+            "<script>",
+            experience.title,
+        )
+
+        self.assertNotIn(
+            "<img",
+            experience.description,
+        )
+
+    def test_star_ajax_returns_json(self):
+        self.client.login(
+            username="regular_t5",
+            password="testpass123",
+        )
+
+        response = self.client.post(
+            reverse(
+                "main:toggle_star_experience",
+                args=[self.experience.id],
+            ),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        data = response.json()
+
+        self.assertTrue(
+            data["is_starred"]
+        )
+
+        self.assertEqual(
+            data["star_count"],
+            1,
         )
