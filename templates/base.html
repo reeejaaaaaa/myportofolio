@@ -23,9 +23,9 @@
     {% block meta %}
     {% endblock meta %}
 </head>
-{% include "components/toast.html" %}
-<body>
 
+<body>
+    {% include "components/toast.html" %}
     <header class="site-header">
         <div class="container">
 
@@ -93,7 +93,10 @@
             </p>
         </div>
     </footer>
+    <script src="{% static 'js/utils.js' %}"></script>
 
+    {% block extra_js %}
+    {% endblock extra_js %}
 </body>
 
 </html>

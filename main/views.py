@@ -1,4 +1,4 @@
-from django.shortcuts import render
+
 from main.models import Education, Experience, Skill, Project
 from django.contrib import messages
 from main.forms import EducationForm, ProjectForm, SkillForm, ExperienceForm
@@ -12,6 +12,9 @@ import datetime
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST
+from django.middleware.csrf import get_token
+from django.urls import reverse
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 def show_main(request):
     json_response = get_skills_json(request)
@@ -43,25 +46,19 @@ def show_main(request):
     return render(request, "index.html", context)
 
 
+@ensure_csrf_cookie
 def show_experience(request):
-    json_response = get_experiences_json(request)
-
-    experiences = serializers.deserialize(
-        "json",
-        json_response.content.decode("utf-8"),
-    )
-
-    experience_list = [experience.object for experience in experiences]
-
     is_editor = (
         request.user.is_authenticated
-        and request.user.groups.filter(name="Editor").exists()
+        and request.user.groups.filter(
+            name="Editor"
+        ).exists()
     )
 
     context = {
         "name": "Rheza Abdilla",
-        "experience_list": experience_list,
         "is_editor": is_editor,
+        "form": ExperienceForm(),
     }
 
     return render(
@@ -497,19 +494,137 @@ def toggle_star(request, project_id):
 
 
 def get_experiences_json(request):
-    experiences = Experience.objects.all().order_by("-started_at")
+    search_query = request.GET.get(
+        "q",
+        "",
+    ).strip()
 
-    experiences_json = serializers.serialize(
-        "json",
-        experiences,
-        use_natural_foreign_keys=True,
+    experiences = (
+        Experience.objects
+        .select_related(
+            "education"
+        )
+        .prefetch_related(
+            "projects",
+            "starred_by",
+        )
+        .order_by(
+            "-started_at"
+        )
     )
 
-    return HttpResponse(
-        experiences_json,
-        content_type="application/json",
-    )
+    if search_query:
+        experiences = experiences.filter(
+            title__icontains=search_query
+        )
 
+    data = []
+
+    for experience in experiences:
+        starred_users = list(
+            experience.starred_by.all()
+        )
+
+        is_starred = (
+            request.user.is_authenticated
+            and any(
+                user.id == request.user.id
+                for user in starred_users
+            )
+        )
+
+        related_projects = [
+            {
+                "id": str(project.id),
+                "title": project.title,
+            }
+            for project
+            in experience.projects.all()
+        ]
+
+        data.append(
+            {
+                "pk": str(experience.id),
+
+                "fields": {
+                    "title":
+                        experience.title,
+
+                    "description":
+                        experience.description,
+
+                    "category":
+                        experience.category,
+
+                    "category_display":
+                        experience.get_category_display(),
+
+                    "thumbnail":
+                        experience.thumbnail or "",
+
+                    "started_at":
+                        experience.started_at.strftime(
+                            "%b %Y"
+                        ),
+
+                    "ended_at": (
+                        experience.ended_at.strftime(
+                            "%b %Y"
+                        )
+                        if experience.ended_at
+                        else ""
+                    ),
+
+                    "is_ongoing":
+                        experience.is_ongoing,
+
+                    "education": (
+                        experience.education.institution
+                        if experience.education
+                        else ""
+                    ),
+
+                    "projects":
+                        related_projects,
+
+                    "star_count":
+                        len(starred_users),
+
+                    "is_starred":
+                        is_starred,
+
+                    "starred_by_names":
+                        ", ".join(
+                            user.username
+                            for user
+                            in starred_users
+                        ),
+
+                    "edit_url":
+                        reverse(
+                            "main:update_experience",
+                            args=[experience.id],
+                        ),
+
+                    "delete_url":
+                        reverse(
+                            "main:delete_experience",
+                            args=[experience.id],
+                        ),
+
+                    "star_url":
+                        reverse(
+                            "main:toggle_star_experience",
+                            args=[experience.id],
+                        ),
+                },
+            }
+        )
+
+    return JsonResponse(
+        data,
+        safe=False,
+    )
 
 @login_required(login_url="/login/")
 def create_experience(request):
@@ -606,19 +721,56 @@ def delete_experience(request, experience_id):
 
 
 @login_required(login_url="/login/")
-def toggle_star_experience(request, experience_id):
+@require_POST
+def toggle_star_experience(
+    request,
+    experience_id,
+):
     experience = get_object_or_404(
         Experience,
         pk=experience_id,
     )
 
-    if request.method == "POST":
-        if request.user in experience.starred_by.all():
-            experience.starred_by.remove(request.user)
-        else:
-            experience.starred_by.add(request.user)
+    if experience.starred_by.filter(
+        id=request.user.id
+    ).exists():
+        experience.starred_by.remove(
+            request.user
+        )
 
-    return redirect("main:show_experience")
+        is_starred = False
+
+    else:
+        experience.starred_by.add(
+            request.user
+        )
+
+        is_starred = True
+
+    if (
+        request.headers.get(
+            "X-Requested-With"
+        ) == "XMLHttpRequest"
+    ):
+        return JsonResponse(
+            {
+                "is_starred":
+                    is_starred,
+
+                "star_count":
+                    experience.starred_by.count(),
+
+                "message": (
+                    "Experience berhasil diberi star."
+                    if is_starred
+                    else "Star berhasil dihapus."
+                ),
+            }
+        )
+
+    return redirect(
+        "main:show_experience"
+    )
 
 @require_POST
 def create_project_ajax(request):
@@ -649,6 +801,48 @@ def create_project_ajax(request):
     return JsonResponse(
         {
             "errors": form.errors.get_json_data()
+        },
+        status=400,
+    )
+
+@require_POST
+def create_experience_ajax(request):
+    if (
+        not request.user.is_authenticated
+        or not request.user.is_superuser
+    ):
+        return JsonResponse(
+            {
+                "message": (
+                    "Hanya pemilik portofolio "
+                    "yang dapat menambahkan experience."
+                )
+            },
+            status=403,
+        )
+
+    form = ExperienceForm(
+        request.POST
+    )
+
+    if form.is_valid():
+        experience = form.save()
+
+        return JsonResponse(
+            {
+                "message":
+                    "Experience berhasil ditambahkan.",
+
+                "pk":
+                    str(experience.id),
+            },
+            status=201,
+        )
+
+    return JsonResponse(
+        {
+            "errors":
+                form.errors.get_json_data()
         },
         status=400,
     )
