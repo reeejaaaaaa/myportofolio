@@ -56,14 +56,23 @@ Projects - Rheza Abdilla
 {% if user.is_superuser %}
 {% include "components/project_form_modal.html" %}
 {% endif %}
+{% csrf_token %}
 <script>
     const BASE_PROJECTS_ENDPOINT =
-        "{% url 'main:get_projects_json' %}";
+        "{% url 'api:project-list' %}";
+
+    const DETAIL_PROJECT_ENDPOINT =
+        "{% url 'api:project-detail' '00000000-0000-0000-0000-000000000000' %}";
+
+    const STAR_PROJECT_ENDPOINT =
+        "{% url 'api:project-star' '00000000-0000-0000-0000-000000000000' %}";
 
     const IS_SUPERUSER =
         "{{ user.is_superuser|yesno:'true,false' }}" === "true";
 
-    let projectsAbortController;
+    const IS_AUTHENTICATED =
+        "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+
 
     const loadingState =
         document.getElementById("loading");
@@ -83,8 +92,50 @@ Projects - Rheza Abdilla
     const searchInput =
         document.getElementById("search-input");
 
-    const SEARCH_DEBOUNCE_DELAY = 300;
+    const projectForm =
+        document.getElementById("project-form");
+
+
+    let projectsAbortController;
     let searchDebounceTimer;
+
+
+    function getCookie(name) {
+        const prefix = `${name}=`;
+
+        const cookie =
+            document.cookie
+                .split(";")
+                .map(value => value.trim())
+                .find(value => value.startsWith(prefix));
+
+        return cookie
+            ? decodeURIComponent(
+                cookie.slice(prefix.length)
+            )
+            : null;
+    }
+
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+
+    function projectEndpoint(
+        pattern,
+        id
+    ) {
+        return pattern.replace(
+            "00000000-0000-0000-0000-000000000000",
+            id
+        );
+    }
 
 
     function displayPageSection({
@@ -115,92 +166,87 @@ Projects - Rheza Abdilla
     }
 
 
-
-    function buildProjectCardElement(item) {
-        const project = item.fields;
-        const projectId = item.pk;
-
-        const articleElement =
+    function buildProjectCardElement(project) {
+        const article =
             document.createElement("article");
 
-        articleElement.className =
+        article.className =
             "experience-card";
 
-        const imageHtml =
+
+        const image =
             project.project_image_url
                 ? `
-            <img
-                src="${escapeHtml(project.project_image_url)}"
-                alt="Gambar ${escapeHtml(project.title)}"
-                class="project-image"
-            >
-        `
-                : "";
-
-        const urlHtml =
-            project.project_url
-                ? `
-            <a
-                href="${escapeHtml(project.project_url)}"
-                class="button"
-            >
-                Lihat Project
-            </a>
-        `
-                : "";
-
-        const deleteUrl =
-            "{% url 'main:delete_project' '00000000-0000-0000-0000-000000000000' %}"
-                .replace(
-                    "00000000-0000-0000-0000-000000000000",
-                    projectId
-                );
-
-        const starUrl =
-            "{% url 'main:toggle_star' '00000000-0000-0000-0000-000000000000' %}"
-                .replace(
-                    "00000000-0000-0000-0000-000000000000",
-                    projectId
-                );
-
-        const deleteHtml =
-            IS_SUPERUSER
-                ? `
-                    <form
-                        method="post"
-                        action="${deleteUrl}"
-                        style="display:inline;"
+                    <img
+                        src="${escapeHtml(project.project_image_url)}"
+                        alt="${escapeHtml(project.title)}"
+                        class="project-image"
                     >
-                        {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="button button-danger"
-                            onclick="return confirm('Yakin ingin menghapus project ini?');"
-                        >
-                            Hapus
-                        </button>
-                    </form>
                 `
                 : "";
 
-        const isStarredClass =
-            project.is_starred
-                ? " is-starred"
+
+        const link =
+            project.project_url
+                ? `
+                    <a
+                        href="${escapeHtml(project.project_url)}"
+                        class="button"
+                    >
+                        Lihat Project
+                    </a>
+                `
                 : "";
 
-        const starText =
-            project.is_starred
-                ? "Unstar"
-                : "Star";
 
-        const starTitle =
-            project.star_count > 0
-                ? `Dibintangi oleh ${escapeHtml(project.starred_by_names)}`
-                : "Jadilah yang pertama memberi star";
+        const star =
+            IS_AUTHENTICATED
+                ? `
+                    <button
+                        type="button"
+                        class="button button-star${project.is_starred ? " is-starred" : ""}"
+                        data-action="star"
+                        data-id="${escapeHtml(project.id)}"
+                        title="${escapeHtml(project.starred_by_names)}"
+                    >
+                        <span aria-hidden="true">
+                            ★
+                        </span>
 
-        const completeCardHtml = `
-            ${imageHtml}
+                        ${project.is_starred ? "Unstar" : "Star"}
+
+                        <span class="star-count">
+                            ${project.star_count}
+                        </span>
+                    </button>
+                `
+                : `
+                    <a
+                        href="{% url 'main:login' %}"
+                        class="button"
+                    >
+                        Login to star (${project.star_count})
+                    </a>
+                `;
+
+
+        const remove =
+            IS_SUPERUSER
+                ? `
+                    <button
+                        type="button"
+                        class="button button-danger"
+                        data-action="delete"
+                        data-id="${escapeHtml(project.id)}"
+                    >
+                        Hapus
+                    </button>
+                `
+                : "";
+
+
+        article.innerHTML = `
+            ${image}
 
             <h2>
                 ${escapeHtml(project.title)}
@@ -216,43 +262,15 @@ Projects - Rheza Abdilla
 
             <div class="project-card-actions">
                 <div class="project-actions">
-
-                    ${urlHtml}
-
-                    <form
-                        method="post"
-                        action="${starUrl}"
-                        class="star-form"
-                    >
-                        {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="button button-star${isStarredClass}"
-                            title="${starTitle}"
-                        >
-                            <span aria-hidden="true">
-                                ★
-                            </span>
-
-                            ${starText}
-
-                            <span class="star-count">
-                                ${project.star_count}
-                            </span>
-                        </button>
-                    </form>
-
-                    ${deleteHtml}
-
+                    ${link}
+                    ${star}
+                    ${remove}
                 </div>
             </div>
         `;
 
-        articleElement.innerHTML =
-            completeCardHtml;
 
-        return articleElement;
+        return article;
     }
 
 
@@ -266,59 +284,68 @@ Projects - Rheza Abdilla
         projectsAbortController =
             new AbortController();
 
+
         try {
             displayPageSection({
                 showLoading: true
             });
 
-            const url =
-                searchQuery
-                    ? `${BASE_PROJECTS_ENDPOINT}?title=${encodeURIComponent(searchQuery)}`
-                    : BASE_PROJECTS_ENDPOINT;
+
+            const url = new URL(
+                BASE_PROJECTS_ENDPOINT,
+                window.location.origin
+            );
+
+
+            if (searchQuery) {
+                url.searchParams.set(
+                    "title",
+                    searchQuery
+                );
+            }
+
 
             const response =
                 await fetch(
                     url,
                     {
                         headers: {
-                            "Accept": "application/json"
+                            "Accept":
+                                "application/json"
                         },
+
                         signal:
                             projectsAbortController.signal
                     }
                 );
 
+
             if (!response.ok) {
                 throw new Error(
-                    "Failed to fetch data"
+                    `HTTP ${response.status}`
                 );
             }
 
-            const projectData =
+
+            const projects =
                 await response.json();
 
-            if (projectData.length === 0) {
-                displayPageSection({
-                    showEmpty: true
-                });
 
-            } else {
-                gridContainer.innerHTML = "";
+            gridContainer.replaceChildren(
+                ...projects.map(
+                    buildProjectCardElement
+                )
+            );
 
-                projectData.forEach(
-                    item => {
-                        gridContainer.appendChild(
-                            buildProjectCardElement(
-                                item
-                            )
-                        );
-                    }
-                );
 
-                displayPageSection({
-                    showGrid: true
-                });
-            }
+            displayPageSection({
+                showGrid:
+                    projects.length > 0,
+
+                showEmpty:
+                    projects.length === 0
+            });
+
 
         } catch (error) {
             if (
@@ -328,10 +355,9 @@ Projects - Rheza Abdilla
                 return;
             }
 
-            console.error(
-                "Error loading projects:",
-                error
-            );
+
+            console.error(error);
+
 
             displayPageSection({
                 showError: true
@@ -340,150 +366,162 @@ Projects - Rheza Abdilla
     }
 
 
-    function searchProjects() {
-        fetchProjects(
-            searchInput.value.trim()
+    function apiErrorMessage(
+        data,
+        status
+    ) {
+        const messages =
+            Object
+                .values(data)
+                .flat()
+                .filter(
+                    value =>
+                        typeof value === "string"
+                );
+
+
+        return (
+            messages.join(" ")
+            || `Request failed (HTTP ${status}).`
         );
     }
 
 
-    searchInput.addEventListener(
-        "input",
-        function () {
-            clearTimeout(
-                searchDebounceTimer
-            );
+    async function writeProject(
+        url,
+        method,
+        payload
+    ) {
+        const response =
+            await fetch(
+                url,
+                {
+                    method: method,
 
-            searchDebounceTimer =
-                setTimeout(
-                    function () {
-                        searchProjects();
+                    headers: {
+                        "Accept":
+                            "application/json",
+
+                        "Content-Type":
+                            "application/json",
+
+                        "X-CSRFToken":
+                            getCookie(
+                                "csrftoken"
+                            )
                     },
-                    SEARCH_DEBOUNCE_DELAY
-                );
-        }
-    );
 
-
-    searchForm.addEventListener(
-        "submit",
-        function (event) {
-            event.preventDefault();
-
-            clearTimeout(
-                searchDebounceTimer
+                    body:
+                        payload === undefined
+                            ? undefined
+                            : JSON.stringify(
+                                payload
+                            )
+                }
             );
 
-            searchProjects();
+
+        if (response.status === 204) {
+            return null;
         }
-    );
 
-    function closeProjectModal() {
-        document
-            .getElementById(
-                "add-project-modal"
-            )
-            .hidePopover();
+
+        const data =
+            await response
+                .json()
+                .catch(() => ({}));
+
+
+        if (!response.ok) {
+            throw new Error(
+                apiErrorMessage(
+                    data,
+                    response.status
+                )
+            );
+        }
+
+
+        return data;
     }
-
-    const CREATE_PROJECT_ENDPOINT =
-        "{% url 'main:create_project_ajax' %}";
-
-    const projectForm =
-        document.getElementById("project-form");
-
-
 
 
     async function addProject(event) {
         event.preventDefault();
 
-        const submitButton =
+
+        const button =
             projectForm.querySelector(
                 'button[type="submit"]'
             );
 
-        submitButton.disabled = true;
+
+        button.disabled = true;
+
 
         try {
-            const response =
-                await fetch(
-                    CREATE_PROJECT_ENDPOINT,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "X-CSRFToken":
-                                getCookie(
-                                    "csrftoken"
-                                )
-                        },
-
-                        body:
-                            new FormData(
-                                projectForm
-                            )
-                    }
+            const fields =
+                new FormData(
+                    projectForm
                 );
 
-            const result =
-                await response
-                    .json()
-                    .catch(() => ({}));
 
-            if (response.ok) {
-                projectForm.reset();
-
-                closeProjectModal();
-
-                showToast(
-                    "Berhasil",
-                    "Proyek baru berhasil ditambahkan!",
-                    "success"
+            const payload =
+                Object.fromEntries(
+                    [
+                        "title",
+                        "description",
+                        "tech_stack",
+                        "project_url",
+                        "project_image_url"
+                    ].map(
+                        name => [
+                            name,
+                            fields.get(name)
+                        ]
+                    )
                 );
 
-                fetchProjects(
-                    searchInput.value.trim()
-                );
 
-            } else {
-                const errorMessages =
-                    result.errors
-                        ? Object
-                            .values(
-                                result.errors
-                            )
-                            .flat()
-                            .map(
-                                error =>
-                                    error.message
-                            )
-                        : [
-                            result.message ||
-                            `Terjadi kesalahan (status ${response.status}).`
-                        ];
-
-                showToast(
-                    "Gagal menambahkan proyek",
-                    errorMessages.join(" "),
-                    "error"
-                );
-            }
-
-        } catch (error) {
-            console.error(
-                "Error adding project:",
-                error
+            await writeProject(
+                BASE_PROJECTS_ENDPOINT,
+                "POST",
+                payload
             );
 
+
+            projectForm.reset();
+
+
+            document
+                .getElementById(
+                    "add-project-modal"
+                )
+                .hidePopover();
+
+
+            showToast(
+                "Berhasil",
+                "Proyek berhasil ditambahkan.",
+                "success"
+            );
+
+
+            await fetchProjects(
+                searchInput.value.trim()
+            );
+
+
+        } catch (error) {
             showToast(
                 "Gagal menambahkan proyek",
-                "Tidak dapat terhubung ke server. Silakan coba lagi.",
+                error.message,
                 "error"
             );
 
+
         } finally {
-            submitButton.disabled = false;
+            button.disabled = false;
         }
     }
 
@@ -494,6 +532,134 @@ Projects - Rheza Abdilla
             addProject
         );
     }
+
+
+    gridContainer.addEventListener(
+        "click",
+        async function (event) {
+
+            const button =
+                event.target.closest(
+                    "button[data-action]"
+                );
+
+
+            if (
+                !button
+                || button.disabled
+            ) {
+                return;
+            }
+
+
+            const action =
+                button.dataset.action;
+
+
+            if (
+                action === "delete"
+                && !window.confirm(
+                    "Yakin ingin menghapus project ini?"
+                )
+            ) {
+                return;
+            }
+
+
+            button.disabled = true;
+
+
+            try {
+                const pattern =
+                    action === "star"
+                        ? STAR_PROJECT_ENDPOINT
+                        : DETAIL_PROJECT_ENDPOINT;
+
+
+                await writeProject(
+                    projectEndpoint(
+                        pattern,
+                        button.dataset.id
+                    ),
+
+                    action === "star"
+                        ? "POST"
+                        : "DELETE"
+                );
+
+
+                showToast(
+                    "Berhasil",
+
+                    action === "star"
+                        ? "Star berhasil diperbarui."
+                        : "Project berhasil dihapus.",
+
+                    "success"
+                );
+
+
+                await fetchProjects(
+                    searchInput.value.trim()
+                );
+
+
+            } catch (error) {
+                showToast(
+                    "Request gagal",
+                    error.message,
+                    "error"
+                );
+
+
+            } finally {
+                button.disabled = false;
+            }
+        }
+    );
+
+
+    searchInput.addEventListener(
+        "input",
+        function () {
+            clearTimeout(
+                searchDebounceTimer
+            );
+
+
+            searchDebounceTimer =
+                setTimeout(
+                    () =>
+                        fetchProjects(
+                            searchInput
+                                .value
+                                .trim()
+                        ),
+
+                    300
+                );
+        }
+    );
+
+
+    searchForm.addEventListener(
+        "submit",
+        function (event) {
+            event.preventDefault();
+
+
+            clearTimeout(
+                searchDebounceTimer
+            );
+
+
+            fetchProjects(
+                searchInput.value.trim()
+            );
+        }
+    );
+
+
     fetchProjects(
         searchInput.value.trim()
     );

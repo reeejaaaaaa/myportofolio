@@ -9,8 +9,10 @@ Experience - Rheza Abdilla
 
 <main>
 
-    <section class="experience-section" id="experience-app" data-experiences-url="{% url 'main:get_experiences_json' %}"
-        data-create-url="{% url 'main:create_experience_ajax' %}" data-projects-url="{% url 'main:show_projects' %}"
+    <section class="experience-section" id="experience-app" data-experiences-url="{% url 'api:experience-list' %}"
+        data-detail-pattern="{% url 'api:experience-detail' '00000000-0000-0000-0000-000000000000' %}"
+        data-star-pattern="{% url 'api:experience-star' '00000000-0000-0000-0000-000000000000' %}"
+        data-edit-pattern="{% url 'main:update_experience' '00000000-0000-0000-0000-000000000000' %}" data-projects-url="{% url 'main:show_projects' %}"
         data-login-url="{% url 'main:login' %}" data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"
         data-is-editor="{{ is_editor|yesno:'true,false' }}"
         data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}">
@@ -174,6 +176,7 @@ Experience - Rheza Abdilla
     {% include "components/experience_form_modal.html" %}
     {% endif %}
 
+    {% csrf_token %}
 </main>
 
 {% endblock content %}

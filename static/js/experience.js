@@ -11,8 +11,20 @@
     const experiencesUrl =
         app.dataset.experiencesUrl;
 
-    const createUrl =
-        app.dataset.createUrl;
+    const detailPattern = app.dataset.detailPattern;
+    const starPattern = app.dataset.starPattern;
+    const editPattern = app.dataset.editPattern;
+
+    function experienceEndpoint(pattern, id) {
+        return pattern.replace("00000000-0000-0000-0000-000000000000", id);
+    }
+
+    function formatMonthYear(value) {
+        const [year, month, day] = value.split("-").map(Number);
+        return new Intl.DateTimeFormat("en", {
+            month: "short", year: "numeric", timeZone: "UTC"
+        }).format(new Date(Date.UTC(year, month - 1, day || 1)));
+    }
 
     const projectsUrl =
         app.dataset.projectsUrl;
@@ -151,9 +163,7 @@
     }
 
 
-    function buildExperienceCardElement(item) {
-        const experience =
-            item.fields;
+    function buildExperienceCardElement(experience) {
 
         const article =
             document.createElement(
@@ -177,7 +187,7 @@
 
 
         const educationHtml =
-            experience.education
+            experience.education_name
                 ? `
                     <div class="experience-related">
                         <span class="experience-related-label">
@@ -185,7 +195,7 @@
                         </span>
 
                         <span class="experience-related-value">
-                            ${escapeHtml(experience.education)}
+                            ${escapeHtml(experience.education_name)}
                         </span>
                     </div>
                 `
@@ -207,7 +217,7 @@
                 <button
                     type="button"
                     class="button button-star${experience.is_starred ? " is-starred" : ""}"
-                    data-star-url="${escapeHtml(experience.star_url)}"
+                    data-star-url="${escapeHtml(experienceEndpoint(starPattern, experience.id))}"
                     title="${starTitle}"
                 >
                     <span aria-hidden="true">
@@ -239,7 +249,7 @@
             isSuperuser || isEditor
                 ? `
                     <a
-                        href="${escapeHtml(experience.edit_url)}"
+                        href="${escapeHtml(experienceEndpoint(editPattern, experience.id))}"
                         class="button button-secondary"
                     >
                         Edit
@@ -254,7 +264,7 @@
                 type="button"
                 class="button button-danger"
                 data-delete-url="${escapeHtml(
-                    experience.delete_url
+                    experienceEndpoint(detailPattern, experience.id)
                 )}"
                 data-experience-title="${escapeHtml(
                     experience.title
@@ -277,12 +287,12 @@
 
     <p class="experience-period">
         ${escapeHtml(
-            experience.started_at
+            formatMonthYear(experience.started_at)
         )}
         —
         ${experience.ended_at
                 ? escapeHtml(
-                    experience.ended_at
+                    formatMonthYear(experience.ended_at)
                 )
                 : "Present"
             }
@@ -310,7 +320,7 @@
 
         <div class="experience-project-list">
             ${buildProjectLinks(
-                experience.projects
+                experience.project_details
             )}
         </div>
 
@@ -341,7 +351,7 @@
         const ongoingCount =
             data.filter(
                 item =>
-                    item.fields.is_ongoing
+                    item.is_ongoing
             ).length;
 
 
@@ -352,16 +362,14 @@
         let totalStars = 0;
 
 
-        data.forEach(item => {
-            const experience =
-                item.fields;
+        data.forEach(experience => {
 
 
             totalStars +=
                 experience.star_count;
 
 
-            experience.projects.forEach(
+            experience.project_details.forEach(
                 project => {
                     uniqueProjectIds.add(
                         project.id
@@ -392,7 +400,7 @@
             selectedCategory
                 ? currentExperienceData.filter(
                     item =>
-                        item.fields.category ===
+                        item.category ===
                         selectedCategory
                 )
                 : [...currentExperienceData];
@@ -406,8 +414,8 @@
         if (sortSelect.value === "stars") {
             filteredData.sort(
                 (a, b) =>
-                    b.fields.star_count -
-                    a.fields.star_count
+                    b.star_count -
+                    a.star_count
             );
         }
 
@@ -415,8 +423,8 @@
         if (sortSelect.value === "az") {
             filteredData.sort(
                 (a, b) =>
-                    a.fields.title.localeCompare(
-                        b.fields.title
+                    a.title.localeCompare(
+                        b.title
                     )
             );
         }
@@ -613,7 +621,7 @@
                         await fetch(
                             deleteButton.dataset.deleteUrl,
                             {
-                                method: "POST",
+                                method: "DELETE",
 
                                 headers: {
                                     "X-CSRFToken":
@@ -630,23 +638,15 @@
                             }
                         );
 
-                    const result =
-                        await response
-                            .json()
-                            .catch(
-                                () => ({})
-                            );
-
                     if (!response.ok) {
                         throw new Error(
-                            result.message ||
-                            "Gagal menghapus experience."
+                            `Gagal menghapus experience (${response.status}).`
                         );
                     }
 
                     showToast(
                         "Berhasil",
-                        result.message,
+                        "Experience berhasil dihapus.",
                         "success"
                     );
 
@@ -721,7 +721,9 @@
 
                 showToast(
                     "Berhasil",
-                    result.message,
+                    result.is_starred
+                        ? "Experience berhasil diberi star."
+                        : "Star berhasil dihapus.",
                     "success"
                 );
 
@@ -765,10 +767,22 @@
         submitButton.disabled = true;
 
 
+        const fields = new FormData(experienceForm);
+        const payload = {
+            title: fields.get("title"),
+            description: fields.get("description"),
+            category: fields.get("category"),
+            thumbnail: fields.get("thumbnail") || "",
+            started_at: fields.get("started_at"),
+            ended_at: fields.get("ended_at") || null,
+            education: fields.get("education") || null,
+            projects: fields.getAll("projects")
+        };
+
         try {
             const response =
                 await fetch(
-                    createUrl,
+                    experiencesUrl,
                     {
                         method: "POST",
 
@@ -778,14 +792,11 @@
                                     "csrftoken"
                                 ),
 
-                            "X-Requested-With":
-                                "XMLHttpRequest"
+                            "Accept": "application/json",
+                            "Content-Type": "application/json"
                         },
 
-                        body:
-                            new FormData(
-                                experienceForm
-                            )
+                        body: JSON.stringify(payload)
                     }
                 );
 
@@ -810,7 +821,6 @@
 
                 showToast(
                     "Berhasil",
-                    result.message ||
                     "Experience berhasil ditambahkan.",
                     "success"
                 );
@@ -825,8 +835,8 @@
 
 
             const errorMessages =
-                getFormErrorMessages(
-                    result.errors
+                Object.values(result).flat().filter(
+                    value => typeof value === "string"
                 );
 
 
@@ -835,7 +845,7 @@
                 errorMessages.length
                     ? errorMessages.join(" ")
                     : (
-                        result.message ||
+                        result.detail ||
                         `Terjadi kesalahan (${response.status}).`
                     ),
                 "error"
