@@ -248,11 +248,13 @@ class ExperienceForm(ModelForm):
                 }
             ),
             "started_at": DateInput(
+                format="%Y-%m-%d",
                 attrs={
                     "type": "date",
                 }
             ),
             "ended_at": DateInput(
+                format="%Y-%m-%d",
                 attrs={
                     "type": "date",
                 }

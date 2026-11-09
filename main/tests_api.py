@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from main.models import Project
+from main.models import Project, Experience
 
 
 class ProjectAPITest(APITestCase):
@@ -536,6 +536,14 @@ class ExperienceAPITest(APITestCase):
             "projects": [str(cls.project.id)],
         }
 
+    def experience_database_state(self):
+        """Include scalar fields and relations so denied writes cannot pass silently."""
+        return [
+            (row, list(Experience.objects.get(pk=row["id"]).projects.values_list("pk", flat=True)),
+             list(Experience.objects.get(pk=row["id"]).starred_by.values_list("pk", flat=True)))
+            for row in Experience.objects.order_by("id").values()
+        ]
+
     def test_public_representation_and_search(self):
         response = self.client.get(self.list_url, {"q": "RESEARCH"})
         self.assertEqual(response.status_code, 200)
@@ -564,8 +572,10 @@ class ExperienceAPITest(APITestCase):
                 ("delete", self.detail_url, {}),
             ):
                 with self.subTest(user=user, method=method):
+                    before = self.experience_database_state()
                     response = getattr(self.client, method)(url, payload, format="json")
                     self.assertEqual(response.status_code, 403)
+                    self.assertEqual(self.experience_database_state(), before)
         self.experience.refresh_from_db()
         self.assertEqual(self.experience.title, "Research Assistant")
 
@@ -580,10 +590,13 @@ class ExperienceAPITest(APITestCase):
         self.assertEqual(self.client.put(
             self.detail_url, self.payload, format="json",
         ).status_code, 200)
+        before = self.experience_database_state()
         self.assertEqual(self.client.post(
             self.list_url, self.payload, format="json",
         ).status_code, 403)
+        self.assertEqual(self.experience_database_state(), before)
         self.assertEqual(self.client.delete(self.detail_url).status_code, 403)
+        self.assertEqual(self.experience_database_state(), before)
 
     def test_owner_crud_and_read_only_fields(self):
         from main.models import Experience
@@ -668,3 +681,53 @@ class ExperienceAPITest(APITestCase):
         self.assertEqual(client.post(
             self.list_url, self.payload, format="json", HTTP_X_CSRFTOKEN=token,
         ).status_code, 201)
+
+    def test_edit_page_and_patch_with_real_session_csrf(self):
+        self.editor.set_password("test-password")
+        self.editor.save()
+        client = APIClient(enforce_csrf_checks=True)
+        self.assertTrue(client.login(username=self.editor.username, password="test-password"))
+        page = client.get(reverse("main:update_experience", args=[self.experience.id]))
+        self.assertContains(page, 'data-detail-url="' + self.detail_url + '"')
+        self.assertContains(page, 'value="2026-01-01"')
+        self.assertContains(page, 'js/experience-edit.js')
+        before = self.experience_database_state()
+        response = client.patch(self.detail_url, {"title": "Session edit"}, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.experience_database_state(), before)
+        response = client.patch(self.detail_url, {"title": "Session edit"}, format="json",
+                                HTTP_X_CSRFTOKEN=client.cookies["csrftoken"].value)
+        self.assertEqual(response.status_code, 200)
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, "Session edit")
+
+    def test_star_uses_session_user_and_does_not_expose_sensitive_fields(self):
+        before = self.experience_database_state()
+        self.assertEqual(self.client.post(self.star_url).status_code, 403)
+        self.assertEqual(self.experience_database_state(), before)
+        for user in (self.visitor, self.editor, self.owner):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(self.star_url, {"user": self.owner.pk}, format="json")
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(self.experience.starred_by.filter(pk=user.pk).exists())
+            self.assertNotIn("email", response.data)
+            self.assertNotIn("password", response.data)
+            self.assertNotIn("starred_by", response.data)
+        self.assertEqual(self.experience.starred_by.count(), 3)
+
+    def test_legacy_editor_cannot_create_or_delete(self):
+        self.client.force_login(self.editor)
+        before = self.experience_database_state()
+        for url in (reverse("main:create_experience"),
+                    reverse("main:create_experience_ajax"),
+                    reverse("main:delete_experience", args=[self.experience.id])):
+            self.assertEqual(self.client.post(url, self.payload, format="json").status_code, 403)
+            self.assertEqual(self.experience_database_state(), before)
+
+    def test_browsable_api_and_projects_page(self):
+        for url in (self.list_url, self.detail_url, reverse("api:project-list")):
+            response = self.client.get(url, HTTP_ACCEPT="text/html")
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "rest_framework")
+        self.assertContains(self.client.get(reverse("main:show_projects")),
+                            reverse("api:project-list"))

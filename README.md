@@ -1,4 +1,4 @@
-# 🔥 MyPortfolio
+# MyPortfolio — Tugas 6
 
 ## 👤 Identitas
 
@@ -10,6 +10,8 @@
 
 ---
 
+Website portofolio pribadi berbasis Django. Tugas 6 berfokus pada API Experience menggunakan Django REST Framework, integrasi Fetch API, hak akses empat peran, dan pengujian.
+
 ## 📁 Struktur Folder
 
 ```text
@@ -17,9 +19,14 @@ myportofolio/
 ├── main/
 │   ├── migrations/
 │   ├── admin.py
+│   ├── api_urls.py
+│   ├── api_views.py
 │   ├── apps.py
 │   ├── forms.py
 │   ├── models.py
+│   ├── permissions.py
+│   ├── serializers.py
+│   ├── tests_api.py
 │   ├── tests.py
 │   ├── urls.py
 │   └── views.py
@@ -41,6 +48,8 @@ myportofolio/
 │   │   └── rheza.jpeg
 │   │
 │   └── js/
+│       ├── experience-api.js
+│       ├── experience-edit.js
 │       ├── experience.js
 │       ├── toast.js
 │       └── utils.js
@@ -72,75 +81,63 @@ myportofolio/
 └── requirements.txt
 ```
 
-# 📚 Refleksi Tugas
+## Refleksi
 
-## 🧩 Tugas 5
+### Tugas 6
 
-Pada Tugas 5, saya menerapkan pola interaktivitas berbasis JavaScript dan AJAX pada halaman Experience.
+1. **REST, JSON, serta perbedaan PUT dan PATCH**
 
-Implementasi yang dilakukan:
-- Menampilkan data Experience menggunakan Fetch API dan AJAX.
-- Menyusun respons JSON secara manual menggunakan `JsonResponse`.
-- Menampilkan informasi star berupa jumlah star dan status star pengguna yang sedang login.
-- Menambahkan loading state, empty state, dan error state.
-- Menambahkan pencarian Experience tanpa reload halaman.
-- Menggunakan debounce selama 300 ms pada pencarian.
-- Menambahkan Experience melalui modal dengan AJAX.
-- Menangani HTTP response 201, 400, dan 403.
-- Mengirim CSRF token pada request POST.
-- Menampilkan toast untuk kondisi berhasil maupun gagal.
-- Melakukan escaping data pada JavaScript sebelum data dimasukkan ke HTML.
-- Membersihkan input teks menggunakan `strip_tags` pada `ExperienceForm`.
-- Menambahkan Star/Unstar menggunakan AJAX tanpa reload halaman.
-- Menambahkan filter berdasarkan kategori Experience.
-- Menambahkan pengurutan berdasarkan newest, oldest, jumlah star, dan judul A-Z.
-- Menambahkan summary interaktif untuk total Experience, ongoing Experience, project terkait, dan total star.
-- Menambahkan Delete Experience melalui AJAX tanpa reload halaman.
+   REST (Representational State Transfer) adalah gaya arsitektur untuk sistem terdistribusi dengan batasan client-server, stateless, cache, uniform interface, layered system, serta code-on-demand yang opsional. Resource dikenali melalui URI dan dimanipulasi lewat representasinya. Menghasilkan JSON saja hanya menentukan format data; API juga perlu mengikuti semantik operasi, status respons, dan prinsip REST. Sebagai contoh, GET tidak boleh dipakai untuk menghapus Experience. API proyek ini menggunakan pola resource `/api/v1/experiences/` dan metode HTTP, tetapi memakai sesi Django untuk login sehingga tidak diklaim memenuhi seluruh batasan REST secara ketat.
 
-### Pertanyaan Reflektif
+   PUT digunakan ketika klien mengirim representasi pengganti yang lengkap, misalnya menyimpan seluruh field Experience dari klien API. PATCH digunakan untuk pembaruan sebagian, misalnya hanya mengubah `title` tanpa mengubah `description`. Pada DRF proyek ini, PUT memvalidasi field wajib, sedangkan PATCH memakai `partial=True`. Field opsional yang tidak dikirim masih mengikuti perilaku serializer; jika ingin mengosongkan relasi atau tanggal, kirim `projects: []` atau `ended_at: null` secara eksplisit. Halaman Edit memakai PATCH.
 
-1. **Jelaskan apa itu debouncing dan mengapa teknik ini penting diterapkan pada fitur pencarian yang menggunakan AJAX!**
+2. **Peran serializer dan keuntungannya**
 
-   Debouncing adalah teknik untuk menunda eksekusi suatu fungsi sampai pengguna berhenti melakukan suatu aksi selama periode waktu tertentu. Pada fitur pencarian Experience, saya menggunakan delay 300 ms.
+   Serializer mengubah model menjadi tipe data Python yang dapat dirender sebagai JSON, serta memvalidasi data masuk sebelum menyimpannya. `ExperienceSerializer` memiliki daftar field eksplisit, validasi `title` dan `description` dengan `strip_tags`, validasi tipe/relasi dari model, serta field star yang read-only. Dibandingkan dictionary manual dan `JsonResponse`, representasi, validasi, pesan kesalahan, serta proses create/update menjadi terpusat dan lebih mudah diuji. Field akun sensitif tidak dimasukkan ke respons. Rujukan: [DRF Serializers](https://www.django-rest-framework.org/api-guide/serializers/).
 
-   Tanpa debouncing, setiap karakter yang diketik pengguna dapat langsung mengirim request baru ke server. Hal ini dapat menghasilkan banyak request yang sebenarnya tidak diperlukan. Dengan debouncing, request baru dikirim setelah pengguna berhenti mengetik sehingga penggunaan jaringan dan server menjadi lebih efisien.
+3. **Autentikasi dan otorisasi**
 
-2. **Jelaskan fungsi dari penggunaan `await` ketika kita menggunakan `fetch()`! Apa yang akan terjadi jika kita tidak menggunakan `await`?**
+   Autentikasi menentukan identitas pemanggil, sedangkan otorisasi menentukan tindakan yang boleh dilakukan identitas tersebut. `SessionAuthentication` mengenali akun melalui sesi Django. Permission Experience mengizinkan pembacaan publik, update oleh Editor/superuser, dan create/delete hanya oleh superuser. Endpoint star memakai `IsAuthenticated` dan mengambil pengguna dari `request.user`. Menyembunyikan tombol hanya mengatur tampilan: pengguna masih dapat mengirim HTTP request secara langsung, sehingga server wajib memeriksa permission. Rujukan: [DRF Authentication](https://www.django-rest-framework.org/api-guide/authentication/).
 
-   `fetch()` merupakan operasi asynchronous dan mengembalikan sebuah Promise. `await` digunakan di dalam fungsi `async` agar program menunggu Promise tersebut selesai sebelum melanjutkan ke proses berikutnya.
+4. **CSRF pada SessionAuthentication dan pengujiannya**
 
-   Pada implementasi saya, `await fetch(...)` digunakan untuk menunggu response dari server, sedangkan `await response.json()` digunakan untuk menunggu body response selesai dikonversi menjadi data JavaScript.
+   Browser dapat menyertakan cookie sesi secara otomatis. Tanpa pemeriksaan CSRF, situs lain dapat mencoba memicu perubahan menggunakan sesi korban. Karena itu, request perubahan yang terautentikasi melalui sesi harus menyertakan token CSRF, termasuk POST, PUT, PATCH, dan DELETE. Frontend mengirim `X-CSRFToken`. `force_authenticate` melewati autentikasi normal sehingga tidak membuktikan pemeriksaan CSRF pada sesi. Test menggunakan `APIClient(enforce_csrf_checks=True)` dan `.login()`, membuktikan request tanpa token ditolak dengan 403 dan database tetap sama, lalu request bertoken berhasil. Rujukan: [DRF SessionAuthentication](https://www.django-rest-framework.org/api-guide/authentication/#sessionauthentication) dan [DRF Testing](https://www.django-rest-framework.org/api-guide/testing/#csrf-validation).
 
-   Jika tidak menggunakan `await`, variabel yang diperoleh masih berupa Promise dan bukan hasil response yang sebenarnya. Promise tersebut harus ditangani menggunakan `.then()` atau mekanisme asynchronous lainnya. Jika langsung digunakan seperti data biasa, program dapat berjalan sebelum data tersedia dan menghasilkan error.
+## Implementasi dan menjalankan Tugas 6
 
-3. **Jelaskan apa itu serangan XSS dan mengapa data yang ditampilkan melalui AJAX/JavaScript lebih rentan terhadap serangan ini daripada data yang ditampilkan langsung melalui template Django!**
+Bagian mandiri yang digunakan adalah **Experience**, dengan model dan data dari tugas sebelumnya. API list/create, detail/update/delete, star, serializer, dan permission melanjutkan pekerjaan Tutorial 07. Tugas 6 melengkapi penyimpanan Edit lewat PATCH tanpa reload, pesan error API pada toast, format tanggal form edit, pengujian database setelah penolakan, dan dokumentasi. Informasi star menggunakan hasil prefetch untuk menghindari query tambahan per Experience pada daftar.
 
-   Cross-Site Scripting atau XSS adalah serangan ketika input berbahaya berupa HTML atau JavaScript berhasil dimasukkan ke halaman dan kemudian dijalankan oleh browser.
+| Endpoint | Metode | Fungsi |
+| --- | --- | --- |
+| `/api/v1/experiences/?q=research` | GET | Daftar dan pencarian judul |
+| `/api/v1/experiences/` | POST | Tambah oleh superuser |
+| `/api/v1/experiences/<uuid>/` | GET, PUT, PATCH, DELETE | Detail, update Editor/superuser, delete superuser |
+| `/api/v1/experiences/<uuid>/star/` | POST | Star/unstar akun yang login |
 
-   Django template secara default melakukan escaping terhadap nilai yang dirender menggunakan `{{ variable }}`. Namun, ketika data dari endpoint AJAX disisipkan secara manual menggunakan JavaScript seperti `innerHTML`, developer harus memastikan sendiri bahwa nilai tersebut sudah aman.
+Dari folder proyek di PowerShell, gunakan virtualenv yang sudah ada:
 
-   Pada halaman Experience, setiap nilai teks yang dimasukkan ke HTML melalui JavaScript diproses menggunakan `escapeHtml()`. Selain itu, input teks seperti title dan description dibersihkan di sisi server menggunakan `strip_tags()` pada `ExperienceForm`. Dengan demikian perlindungan dilakukan baik di frontend maupun backend.
+```powershell
+.\env\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python manage.py migrate
+python manage.py check
+python manage.py test main.tests_api --verbosity 2
+python manage.py test main
+python manage.py runserver
+```
 
-### 🤖 AI Disclosure
+Untuk checkout baru, buat virtualenv terlebih dahulu dengan `python -m venv env`. Buka `/experience/`, `/projects/`, serta `/api/v1/experiences/` untuk Browsable API. Editor adalah akun anggota grup bernama persis `Editor`; superuser dapat dibuat dengan `python manage.py createsuperuser` dan grup diatur melalui admin Django. Jangan gunakan `is_staff` sebagai pengganti izin Editor.
 
-Pada Tugas 5, saya menggunakan ChatGPT sebagai alat bantu untuk memahami, meninjau, dan melakukan debugging implementasi AJAX, Fetch API, JavaScript, debouncing, CSRF, modal, toast, authorization, serta perlindungan XSS.
+Pemeriksaan browser: guest membaca/search/filter/sort; pengguna biasa star/unstar; Editor membuka Edit dan menyimpan tanpa reload; superuser menambah/menghapus. Pada Network, penyimpanan Edit harus menggunakan PATCH. Input invalid dan request yang ditolak ditampilkan lewat toast, dan isian form dipertahankan ketika gagal. Tombol Simpan dinonaktifkan selama request untuk menghindari submit ganda. Halaman Projects tetap menggunakan API Tutorial 07. Endpoint lama dipertahankan untuk kompatibilitas, dengan batas izin yang sama.
 
-AI digunakan untuk membantu:
-- meninjau struktur project Django yang sudah dibuat pada tugas sebelumnya;
-- merancang perubahan halaman Experience dari server-side rendering menjadi AJAX;
-- membantu penyusunan endpoint JSON manual;
-- membantu implementasi pencarian dengan debouncing;
-- membantu implementasi modal dan AJAX POST;
-- membantu implementasi AJAX Star/Unstar dan Delete;
-- membantu mengidentifikasi kode lama yang sudah tidak dibutuhkan setelah halaman menggunakan AJAX;
-- membantu debugging error pada JavaScript dan Django;
-- membantu menyusun automated test untuk fitur Tugas 5;
-- membantu meninjau perlindungan XSS pada frontend dan backend.
+## AI Disclosure
 
-Saya tetap melakukan implementasi pada project lokal, menjalankan Django system check dan automated test, menguji aplikasi melalui browser dan Developer Tools, menguji berbagai role pengguna, serta memverifikasi hasil setiap perubahan secara manual.
+Pada Tugas 6, saya menggunakan ChatGPT dan OpenAI Codex sebagai alat bantu dalam pengembangan fitur Experience pada proyek portofolio yang sudah saya kerjakan pada tugas sebelumnya.
+
+AI membantu memberikan penjelasan dan saran terkait Django REST Framework, meninjau kesesuaian implementasi dengan instruksi tugas, serta membantu perubahan kode dan debugging. Bantuan tersebut mencakup integrasi form Edit melalui PATCH, penanganan pesan error API, CSRF, pengujian hak akses, dan penyusunan dokumentasi.
+
+Dalam prosesnya, saya memberikan konteks proyek dan instruksi tugas, meminta agar fungsi sebelumnya tetap dipertahankan, serta mengecek kesesuaian kode terbaru di VS Code. Codex membantu menerapkan perubahan pada repository lokal dan menjalankan pengujian otomatis.
 
 ### Keterbatasan Penggunaan AI
 
-AI tidak dapat mengetahui secara langsung keadaan browser, database, session, environment lokal, maupun perubahan file terbaru tanpa kode atau error log yang saya berikan. Beberapa saran juga perlu disesuaikan kembali karena struktur project berkembang dari tugas-tugas sebelumnya.
-
-Karena itu, setiap saran dari AI tetap saya verifikasi menggunakan `python manage.py check`, automated test, browser Developer Tools, serta pengujian manual sebelum digunakan.
+Hasil bantuan AI tetap perlu ditinjau dan dipahami. Pengujian otomatis membantu memeriksa fungsi API dan hak akses, tetapi belum menjamin seluruh interaksi tampilan di browser berjalan sesuai harapan. Karena itu, pemeriksaan manual pada alur pengguna tetap diperlukan.

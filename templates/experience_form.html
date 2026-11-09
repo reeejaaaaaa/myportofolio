@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
 {% if is_edit %}
@@ -25,6 +26,10 @@ Add Experience - Rheza Abdilla
             <form
                 method="post"
                 class="project-form"
+                {% if is_edit %}
+                id="experience-edit-form"
+                data-detail-url="{% url 'api:experience-detail' experience.id %}"
+                {% endif %}
             >
                 {% csrf_token %}
 
@@ -77,3 +82,9 @@ Add Experience - Rheza Abdilla
 </main>
 
 {% endblock content %}
+{% block extra_js %}
+{% if is_edit %}
+<script src="{% static 'js/experience-api.js' %}"></script>
+<script src="{% static 'js/experience-edit.js' %}"></script>
+{% endif %}
+{% endblock extra_js %}

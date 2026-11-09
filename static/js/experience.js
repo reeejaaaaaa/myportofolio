@@ -617,32 +617,7 @@
                 deleteButton.disabled = true;
 
                 try {
-                    const response =
-                        await fetch(
-                            deleteButton.dataset.deleteUrl,
-                            {
-                                method: "DELETE",
-
-                                headers: {
-                                    "X-CSRFToken":
-                                        getCookie(
-                                            "csrftoken"
-                                        ),
-
-                                    "X-Requested-With":
-                                        "XMLHttpRequest",
-
-                                    "Accept":
-                                        "application/json"
-                                }
-                            }
-                        );
-
-                    if (!response.ok) {
-                        throw new Error(
-                            `Gagal menghapus experience (${response.status}).`
-                        );
-                    }
+                    await writeExperience(deleteButton.dataset.deleteUrl, "DELETE");
 
                     showToast(
                         "Berhasil",
@@ -686,38 +661,7 @@
 
 
             try {
-                const response =
-                    await fetch(
-                        starButton.dataset.starUrl,
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "X-CSRFToken":
-                                    getCookie(
-                                        "csrftoken"
-                                    ),
-
-                                "X-Requested-With":
-                                    "XMLHttpRequest",
-
-                                "Accept":
-                                    "application/json"
-                            }
-                        }
-                    );
-
-
-                if (!response.ok) {
-                    throw new Error(
-                        "Gagal memperbarui star."
-                    );
-                }
-
-
-                const result =
-                    await response.json();
-
+                const result = await writeExperience(starButton.dataset.starUrl, "POST");
 
                 showToast(
                     "Berhasil",
@@ -740,7 +684,7 @@
 
                 showToast(
                     "Gagal",
-                    "Star tidak dapat diperbarui.",
+                    error.message,
                     "error"
                 );
 
@@ -767,89 +711,12 @@
         submitButton.disabled = true;
 
 
-        const fields = new FormData(experienceForm);
-        const payload = {
-            title: fields.get("title"),
-            description: fields.get("description"),
-            category: fields.get("category"),
-            thumbnail: fields.get("thumbnail") || "",
-            started_at: fields.get("started_at"),
-            ended_at: fields.get("ended_at") || null,
-            education: fields.get("education") || null,
-            projects: fields.getAll("projects")
-        };
-
         try {
-            const response =
-                await fetch(
-                    experiencesUrl,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "X-CSRFToken":
-                                getCookie(
-                                    "csrftoken"
-                                ),
-
-                            "Accept": "application/json",
-                            "Content-Type": "application/json"
-                        },
-
-                        body: JSON.stringify(payload)
-                    }
-                );
-
-
-            const result =
-                await response
-                    .json()
-                    .catch(
-                        () => ({})
-                    );
-
-
-            if (response.ok) {
-                experienceForm.reset();
-
-                document
-                    .getElementById(
-                        "add-experience-modal"
-                    )
-                    .hidePopover();
-
-
-                showToast(
-                    "Berhasil",
-                    "Experience berhasil ditambahkan.",
-                    "success"
-                );
-
-
-                fetchExperiences(
-                    searchInput.value.trim()
-                );
-
-                return;
-            }
-
-
-            const errorMessages =
-                Object.values(result).flat().filter(
-                    value => typeof value === "string"
-                );
-
-
-            showToast(
-                "Gagal menambahkan experience",
-                errorMessages.length
-                    ? errorMessages.join(" ")
-                    : (
-                        result.detail ||
-                        `Terjadi kesalahan (${response.status}).`
-                    ),
-                "error"
-            );
+            await writeExperience(experiencesUrl, "POST", experiencePayload(experienceForm));
+            experienceForm.reset();
+            document.getElementById("add-experience-modal").hidePopover();
+            showToast("Berhasil", "Experience berhasil ditambahkan.", "success");
+            await fetchExperiences(searchInput.value.trim());
 
         } catch (error) {
             console.error(
@@ -860,7 +727,7 @@
 
             showToast(
                 "Gagal menambahkan experience",
-                "Tidak dapat terhubung ke server.",
+                error.message,
                 "error"
             );
 

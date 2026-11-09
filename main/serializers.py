@@ -171,9 +171,8 @@ class ExperienceSerializer(serializers.ModelSerializer):
         ):
             return False
 
-        return obj.starred_by.filter(
-            pk=request.user.pk
-        ).exists()
+        # Reuse the prefetched users when serializing a list.
+        return any(user.pk == request.user.pk for user in obj.starred_by.all())
 
 
     def get_starred_by_names(self, obj):
